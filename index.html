@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.75, maximum-scale=0.75, user-scalable=no" />
+<title> </title>
+<style id="dynamicstyle">
+#bullet-player>div>canvas{transform:scale(1,-1) rotateX(180deg);}
+</style>
+<style id="staticstyle">
+/* background-color:rgba(44,11,111,0.5); */
+/* global */
+.none{display:none;}
+.revrsy,.revrsy canvas{
+	-ms-transform:scale(1,-1);
+	-webkit-transform:scale(1,-1);
+	transform:rotateX(180deg);
+}
+body{background-color:rgba(11,11,11,1);overflow:hidden;width:99%;height:99%;}
+canvas{position:absolute;border:0px;}
+div{position:absolute;height:100%;}
+div.autosize{width:auto;height:auto;}
+div.widesize,#play-msgs-mid>*,#play-msgs-top>*{width:100%;height:auto;}
+div.btn{border:1px solid yellow;background-color:rgba(123,123,123,0.25);}
+div.btn:hover{background-color:rgba(255,255,0,0.5);}
+div.smallBtn{padding:8px;display:inline-block;width:auto;height:auto;border:1px solid yellow;background-color:rgba(123,123,123,0.25);}
+div.smallBtn:hover{background-color:rgba(255,255,0,0.5);}
+div.head>div{position:relative;display:inline-block;}
+div.lefttop{left:0px;top:0px;}
+div.maxview{width:100%;height:100%; /* zoom:1000%; */ }
+div.blk{overflow:hidden;}
+div.center{left:50%}
+div.centerv{top:50%}
+div.clearText{font-size:32px;color:#FFFFFF;background-color:rgba(123,123,123,0.5);}
+div.fullScreenMsg{display:none;text-align:center;overflow-y:scroll;}
+div.fullScreenMsg>*{padding:8px;margin:32px;text-align:center;width:auto;height:auto;position:relative;}
+/* playground */
+div.play{left:0px;width:90%;}
+div.playbg{width:0%;height:0%;background-image:url("../img/test-bg-min.png");background-position:center;background-size:25%;opacity:0.75;}
+#ende>div{position:relative;text-align:center;display:none;}
+#ende>div>img{opacity:0.5;}
+#end-submit{font-size:32px;color:#FFFFFF;display:none;background-color:rgba(0,0,0,0.25);}
+#end-submit:hover{background-color:rgba(255,255,0,0.25);}
+/* #end-restart{color:rgba(255,255,255,0.75);font-size:32px;} */
+div.ptrblk>div{width:auto;height:auto;opacity:1;}
+/* playground:bullet */
+#bullet-player div{opacity:0.75;}
+#bullet-boss div{opacity:0.75;}
+/* playground:msg */
+#play-msgs-top{top:0%;}
+#play-msgs-mid{bottom:50%;}
+#play-msgs-btm{top:0%;}
+#play-msgs-mid,#play-msgs-top>*>*,#play-msg-skill,#play-msg-skill>*,#play-msg-system,#play-msg-system>*{
+	-ms-transform:scale(1,-1);
+	-webkit-transform:scale(1,-1);
+	transform:rotateX(180deg);
+}
+#play-msgs-top>*>*,#play-msgs-mid>*,#play-msgs-mid>*>*,#play-msgs-btm>*>*{text-align:center;width:100%;}
+#play-msg-boss>*{display:block;background-color:rgba(255,123,123,0.5);color:#FFFFFF;font-size:16px;border:1px solid red;}
+#play-msg-pause {display: none;background-color:rgba(123,255,123,0.5);color:#FFFFFF;font-size:32px;}
+#play-msg-start {display:block;background-color:rgba(123,255,123,0.5);color:#FFFFFF;font-size:32px;z-index:1;}
+#play-msg-pause,#play-msg-start{bottom:100%;}
+#play-msg-start:hover{     background-color:rgba(234,255,123,0.5);}
+#play-msg-oth>* {display:block;background-color:rgba(123,123,255,0.5);color:#FFFFFF;font-size:16px;border:1px solid blue;}
+#play-msg-system>*{display:block;background-color:rgba(123,255,123,0.5);color:#FFFFFF;font-size:16px;border:1px solid green;}
+#play-msg-boss>*,#play-msg-oth>*,#play-msg-system>*{position:relative;}
+#msg-pregame{text-align:center;overflow-y:scroll;}
+#msg-pregame>*>div{text-align:left;width:auto;height:auto;}
+/* playground:touch */
+div.touchCtl{
+	-ms-transform:scale(1,1);
+	-webkit-transform:scale(1,1);
+	transform:scale(1,1);
+}
+div.touchCtlBlk{top:150px;}
+div.touchBtn{opacity:0.25;}
+#drop{opacity:0.75;}
+/* rank */
+div.rank div.smallBtn{width:auto;}
+#rankContent *{position:relative;}
+#rankContent>div{vertical-align:top;width:46.875%;display:inline-block;background-color:rgba(123,234,123,0.5);}
+#rankContent .rankby{background-color:rgba(234,234,123,0.5);}
+#rankContent .rankdata>div{width:46.875%;display:inline-block;}
+/* pannel */
+div.pad{position:relative;color:rgba(0,0,0,0);background-color:rgba(0,0,0,0);}
+div.pan{left:90%;px;width:10%;background-color:rgba(11,111,11,0.5);}
+div.pan>div{position:relative;background-color:rgba(11,111,11,0.5);margin-bottom:8px;color:rgba(255,255,255,1);height:auto;}
+div.pan>div>div{position:relative;background-color:rgba(128,128,128,0.5);color:rgba(255,255,255,1);height:auto;}
+#pannel-header{text-align:center;}
+div.menu>div{margin-bottom:8px;}
+div.pre{width:0px;height:0px;}
+</style>
+<script src="js/_script-h-general.js"></script>
+<script src="js/_script-conf.js"></script>
+<script src="js/_script-h-game-class.js"></script>
+<script src="js/_script-h-game-function.js"></script>
+</head>
+<body>
+
+<div id="display" class="lefttop maxview">
+	<div id="playground" class="blk play revrsy">
+		<div id="playground-inner" class="maxview" style="left:0;top:0px;">
+			<div class="center"><div id="playground-bg-inner" class="revrsy playbg"></div></div>
+			<div id="bullet-player" class="center"></div>
+			<div id="drop" class="center"></div>
+			<div id="boss" class="center"></div>
+			<div id="bullet-boss" class="center"></div>
+			<div id="player" class="center"></div>
+			<div id="hit-effect" class="center"></div>
+			<div id="boss-ptr" class="center ptrblk"></div>
+		</div>
+		<div id="ende" class="widesize revrsy">
+			<div id="end-win" class="widesize">
+				<img id="img-end-win">
+			</div>
+			<div id="end-lose" class="widesize">
+				<img id="img-end-lose">
+			</div>
+		</div>
+		<div id="play-msgs-top" class="maxview revrsy">
+			<div id="play-msg-boss" class="widesize revrsy"></div>
+		</div>
+		<div id="play-msgs-btm" class="maxview">
+			<div id="play-msg-oth" class="widesize revrsy"></div>
+		</div>
+		<div id="play-msgs-mid" class="maxview">
+			<div id="play-msg-system"></div>
+			<div id="play-msg-skill"></div>
+			<div id="play-msg-pause">pause</div>
+			<div id="play-msg-start">loading...</div>
+		</div>
+		<div id="msg-pregame" class="clearText fullScreenMsg maxview revrsy"><div class="btn">close ( ESC )</div><div><div></div></div></div>
+		<div id="touch-ctl" class="maxview touchCtl" style="display:none;">
+			<div id="touch-ctl-blk-left" class="touchCtlBlk" style="left:50px;">
+				<div id="touch-ctl-left"  class="touchBtn" style="top:000px;left:000px;"></div>
+				<div id="touch-ctl-down"  class="touchBtn" style="top:000px;left:100px;"></div>
+				<div id="touch-ctl-up"    class="touchBtn" style="top:100px;left:100px;"></div>
+				<div id="touch-ctl-right" class="touchBtn" style="top:000px;left:200px;"></div>
+			</div>
+			<div id="touch-ctl-blk-right" class="touchCtlBlk" style="right:50px;">
+				<div id="touch-ctl-atk"   class="touchBtn" style="top:100px;"></div>
+				<div id="touch-ctl-pause" class="touchBtn" style="top:200px;"></div>
+				<div id="touch-ctl-mute" class="touchBtn" style="top:300px;"></div>
+			</div>
+		</div>
+		<div id="restart-confirm" class="clearText fullScreenMsg maxview revrsy"><div class="btn">close ( ESC )</div><div class="head"><br><div>restart?</div> &nbsp; <div id="restart-yes" class="smallBtn">confirm</div></div></div>
+		<div id="rankview" class="rank clearText fullScreenMsg maxview revrsy"><div class="btn">close ( ESC )</div>
+			<div class="head"><div style="">ranks</div> &nbsp; <div id="rankRefresh-all" class="smallBtn">refresh all</div></div>
+			<div id="rankContent">
+				<div>
+					<div class="rankby">shortest time</div>
+					<div id="rankData-byTime" class="rankdata"><div class="rankname"></div><div class="rankvalue"></div></div>
+				</div>
+				<div>
+					<div class="rankby">most hp</div>
+					<div id="rankData-byHp" class="rankdata"><div class="rankname"></div><div class="rankvalue"></div></div>
+				</div>
+			</div>
+		</div>
+		<div id="ranksubmit" class="rank clearText fullScreenMsg maxview revrsy"><div class="btn">close ( ESC )</div>
+			Submit Result
+			<br> 
+			<br> How to address you? <input id="ranksubmit-id" type="text" name="id">
+			<input id="ranksubmit-time" type="hidden" name="time">
+			<input id="ranksubmit-php" type="hidden" name="php">
+			<input id="ranksubmit-bhp" type="hidden" name="php">
+			<br> 
+			<br> <div id="ranksubmit-confirm" class="btn">confirm</div>
+		</div>
+	</div>
+	<div id="pannel" class="blk pan">
+		<!-- some info like HP -->
+		<div id="pannel-header">It's a small game</div>
+		<div id="menu-main" class="menu">
+			Main
+			<div id="menu-restart" class="btn">Restart</div>
+			<div id="menu-readme" class="btn">How to play</div>
+			<div id="menu-ranks" class="btn">See overall rank</div>
+			<div id="menu-submit" class="btn">Submit last result</div>
+			<!--
+			save(?)<br>
+			load(?)<br>
+			-->
+		</div>
+		<div id="menu-functions" class="menu">
+			Functions
+			<div id="menu-resetView" class="none">Reset view</div>
+			<div id="menu-pause" class="btn">Pause</div>
+			<div id="menu-touch" class="btn">Touch mode</div>
+			<div id="menu-touch-adj" class="none">Adjust ouch</div>
+			<div id="menu-mute" class="btn">Mute / Unmute</div>
+			<div id="menu-reloadSound" class="none">Reload sound</div>
+			<div id="menu-auto-shot" class="btn">Auto shot</div>
+			<div id="menu-auto-move" class="none">Auto move</div>
+		</div>
+		<div id="boss-stat">
+			Boss status<br>
+			<div id="boss-stat-hp">HP: 0</div>
+			<div id="boss-stat-mp">MP: 0</div>
+		</div>
+		<div id="game-btn" class="none">
+			gameBtn<br>
+		</div>
+		<div id="player-stat">
+			Player status<br>
+			<div id="player-stat-hp">HP: 0</div>
+			<div id="player-stat-mp">MP: 0</div>
+		</div>
+		<div id="time-stat">
+			time passed
+			<div id="time-stat-data">00:00:00.000</div>
+		</div>
+	</div>
+	<div id="pre-render" class="blk pre">
+		<div id="pre-player"></div>
+		<div id="pre-bullet"></div>
+		<div id="pre-load-sound">
+			<audio id="sound-shot"      muted type="audio/mp4"><source src="../sound/shot.m4a"     ></audio>
+			<audio id="sound-hit"       muted type="audio/mp4"><source src="../sound/hit.m4a"      ></audio>
+			<audio id="sound-buffed"    muted type="audio/mp4"><source src="../sound/buffed.m4a"   ></audio>
+			<audio id="sound-boss-atk0" muted type="audio/mp4"><source src="../sound/bossatk0.m4a" ></audio>
+			<audio id="sound-boss-atk1" muted type="audio/mp4"><source src="../sound/bossatk1.m4a" ></audio>
+			<audio id="sound-boss-atk2" muted type="audio/mp4"><source src="../sound/bossatk2.m4a" ></audio>
+			<audio id="sound-boss-atk3" muted type="audio/mp4"><source src="../sound/bossatk3.m4a" ></audio>
+			<audio id="sound-boss-atk4" muted type="audio/mp4"><source src="../sound/bossatk4.m4a" ></audio>
+			<audio id="sound-boss-atk5" muted type="audio/mp4"><source src="../sound/bossatk5.m4a" ></audio>
+			<audio id="sound-boss-atk6" muted type="audio/mp4"><source src="../sound/bossatk6.m4a" ></audio>
+			<audio id="sound-boss-atkT" muted type="audio/mp4"><source src="../sound/bossatkT.m4a" ></audio>
+			<audio id="sound-end-lose"  muted type="audio/mp4"><source src="../sound/endLose.m4a"  ></audio>
+			<audio id="sound-end-win"   muted type="audio/mp4"><source src="../sound/endWin.m4a"   ></audio>
+		</div>
+		<div id="pre-load-img">
+			<img src id="img-you">
+			<img src id="img-boss">
+			<img src id="img-bullet">
+			<img src id="img-arrow-up">
+			<img src id="img-atk">
+			<img src id="img-timer">
+			<img src id="img-mute">
+			<img src id="img-trace">
+		</div>
+		<div id="pre-test">
+		</div>
+	</div>
+</div>
+<script src="js/_script-t-game-var.js"></script>
+<script src="js/_script-t.js"></script>
+</body>
+</html>
+
