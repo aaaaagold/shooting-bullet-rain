@@ -50,7 +50,7 @@ consts.player0imgID='img-you';
 //const.bossImgIDs=[];
 consts.bossImgID='img-boss';
 //  id-blk-img-dir-path
-consts.imgDir="../img/";
+consts.imgDir="img/";
 //  id-sound
 consts.soundShotID='sound-shot';
 consts.soundHitID='sound-hit';
