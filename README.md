@@ -5,4 +5,4 @@ chrome, firefox, IE11, edge
 ## how to play
 drag index.html to your browser
 ## server.js? score record server?
-server.js is the score record server, use node to run it at server folder
+server.js is the score record server, use node(nodejs) to run it at server folder
