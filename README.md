@@ -1,10 +1,8 @@
-# shooting-bullet-rain
-a javascript shooting game
-# just download and play!!
-by the way, you may need a record server, host it your self
-# platform
+# shooting-bullet-rain, just download and play!!
+It's aa javascript shooting game. there is also a score record server. You can host it your self
+## platform
 chrome, firefox, IE11, edge
-# how to play
+## how to play
 drag index.html to your browser
-# server.js?
-this is a score record server, use node to run it at serverjs folder
+## server.js? score record server?
+server.js is the score record server, use node to run it at server folder
