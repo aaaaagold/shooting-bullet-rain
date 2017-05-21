@@ -21,3 +21,9 @@ Drag "index.html" to your browser
 ## server.js? score record server?
 
 "server/server.js" is the score record server. Use node(nodejs) to run it at "server" folder
+
+You can conncect to server locally by default, but you can also alter
+ - "consts.rankServer" in "js/_script-conf.js" at line 7
+ - "const host" and "const port" in "server/server.js" at line 8 and 9 respectively
+
+to make them can be access by remote
