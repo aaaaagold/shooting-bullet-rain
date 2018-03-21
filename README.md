@@ -16,8 +16,8 @@ If you have a powerful computer, you can reduce the value of "consts.updatePerio
 
 ## how to play
 
-Go to https://aaaaagold.github.io/shooting-bullet-rain/index.html for non-download play, but the javascript is written in .html
-Or download this repository and open "index-download.html". The javascript is written in different files in folder: "js"
+Go to https://aaaaagold.github.io/shooting-bullet-rain/index.html for non-download play, but the javascripts are written in .html
+Or download this repository and open "index-download.html". The javascripts are written in different files in folder: "js"
 
 ## server.js? score record server?
 
