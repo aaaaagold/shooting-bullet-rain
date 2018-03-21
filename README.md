@@ -1,4 +1,4 @@
-# shooting-bullet-rain, just download and play!!
+# shooting-bullet-rain. play or modify to your version
 
 It's a shooting game written mainly in javascript.
 
