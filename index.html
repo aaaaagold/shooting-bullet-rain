@@ -90,10 +90,1638 @@ div.pan>div>div{position:relative;background-color:rgba(128,128,128,0.5);color:r
 div.menu>div{margin-bottom:8px;}
 div.pre{width:0px;height:0px;}
 </style>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-h-general.js"></script>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-conf.js"></script>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-h-game-class.js"></script>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-h-game-function.js"></script>
+<script>
+"use strict";
+// js/_script-h-general.js
+const NULL=null;
+let tmp;
+const undefObj=tmp;
+//var undef="undefined";
+const undef=typeof undefObj;
+const UNDEF=undef;
+function z(t,a,i){return "<"+t+" "+a+">"+i+"</"+t+">"}
+var d=document;
+//function numDelta(str,delta){return str.replace(/\-?[0-9]+\.?[0-9]*/g,function(m){return m!=""?Number(m)+delta:""})}
+function ge(id){return d.getElementById(id)}
+function ce(tag){return d.createElement(tag)}
+function ct(txt){return d.createTextNode(txt)}
+function sa(o,att,inn){o.setAttribute(att,inn);return o}
+function ga(o,att){return o.getAttribute(att)}
+function ac(o,c){o.appendChild(c);return o}
+function rmca(o){while(o.childNodes.length)o.removeChild(o.childNodes[0]);return o}
+function ae(o,e,f){
+	if(o.attachEvent) o.attachEvent("on"+e,f);
+	else if(o.addEventListener) o.addEventListener(e,f);
+	else console.log("function ae: not support");
+	return o;
+}
+function c2i(s){return s.charCodeAt(0)}
+function isundef(v){return (v==undefObj)}
+
+function gcd(a,b){
+	var s,t;
+	if(a==b || b==0) return a;
+	if(a==0) return b;
+	for(var s=0;((a|b)&1)==0;s++){ a>>=1; b>>=1; }
+	while((a&1)==0) a>>=1;
+	do{
+		while((b&1)==0) b>>=1;
+		if(a>b){ t=a; a=b; b=t; }
+		b-=a;
+	}while(b);
+	return a<<s;
+}
+function avgvw(v1,w1,v2,w2){ return (v1*w1+v2*w2)/(w1+w2); }
+function dist(xy1,xy2){
+	var sq=0;
+	var xs=(xy2!=undefObj && xy1.length<xy2.length)?xy2.length:xy1.length;
+	for(var x=0;x<xs;x++){
+		var d=0;
+		if(xy1[x]!=undefObj) d+=xy1[x];
+		if(xy2!=undefObj && xy2[x]!=undefObj) d-=xy2[x];
+		sq+=d*d;
+	}
+	return Math.sqrt(sq);
+}
+function vecA2B(A,B){
+	var rtv=[];
+	var M=Math.max(A.length,B.length);
+	var m=Math.min(A.length,B.length);
+	for(var x=0;x<m;x++) rtv[x]=B[x]-A[x];
+	if(M==B.length) for(var x=m;x<M;x++) rtv[x]=B[x];
+	else for(var x=m;x<M;x++) rtv[x]=-A[x];
+	return rtv;
+}
+function outOfRange(pt,min,max){
+	if(typeof pt=="object"){
+		var rtv=false;
+		for(var x=0;x<pt.length;x++)
+			rtv=rtv||pt[x]>max[x]||pt[x]<min[x];
+		return rtv;
+	}
+	return pt>max || pt<min;
+}
+function strictAbsTo(n,to){
+	return (to<0)?0:((n*n<to*to)?n:(n<0?-to:to));
+}
+function strictInRange(n,l,r){
+	return r<l?n:n>r?r:n<l?l:n;
+}
+function lowerbound(arr,n){
+	var l=0,r=arr.length;
+	for(var m=(l+r)>>1;l!=m;m=(l+r)>>1){
+		if(n<arr[m]) r=m;
+		else l=m;
+	} 
+	return l + (n>arr[m]);
+}
+
+function newImg(id,path){return sa(sa(ce('img'),'id',id),'src',path)}
+function setImg(id,path){return sa(ge(id),'src',path)}
+
+function newCanvas(width,height){
+	if(width==undefObj) width=0;
+	if(height==undefObj) height=0;
+	return sa(sa(sa(ce('canvas'),'width',width),'height',height),'style','left:-'+width/2+'px;');
+}
+function drawImg(c,img,deg,w,h,strtX,strtY,ratioX,ratioY){
+	var stx=(strtX!=undefObj)?Number(strtX):0;
+	var sty=(strtY!=undefObj)?Number(strtY):0;
+	var bw=img.width;
+	var bh=img.height;
+	var rx=(ratioX!=undefObj)?ratioX:1;
+	var ry=(ratioY!=undefObj)?ratioY:1;
+	var dw=bw*rx,dh=bh*ry;
+	if(dw<0){ dw=-dw; }
+	if(dh<0){ dh=-dh; }
+	var newW=(w!=undefObj)?w:dw;
+	if(c.width!=newW) c.width=newW;
+	var newH=(h!=undefObj)?h:dh;
+	if(c.height!=newH)c.height=newH;
+	var ctx = c.getContext("2d");
+	if(rx<0){ ctx.scale(-1,1); ctx.translate(-dw,0); }
+	if(ry<0){ ctx.scale(1,-1); ctx.translate(0,-dh); }
+	if(typeof deg=="number"){
+		ctx.translate(dw/2,dh/2);
+		ctx.rotate(deg*Math.PI/180);
+		ctx.translate(-dw/2,-dh/2);
+	}
+	ctx.drawImage(img, 0, 0, bw, bh, stx, sty, dw, dh);
+	return sa(c,'style','left:-'+dw/2+'px;top:-'+dh/2+'px;');
+}
+function drawImgS(img,rowLen,colLen,deg,strtX,strtY,ratio){ // serial imgages
+	var rtv={};
+	rtv.length=rowLen*colLen;
+	var stx=0; if(strtX!=undefObj) stx=Number(strtX);
+	var sty=0; if(strtY!=undefObj) sty=Number(strtY);
+	var r=1; if(ratio!=undefObj) r=ratio;
+	// w,h: width,height of a block (outer)
+	var w=(img.width/rowLen), h=(img.height/colLen);
+	// bw,bh: width,height of a block (inner)
+	var bw=w-1,bh=h-1;
+	// dw,dh: width,height of draw
+	var dw=w*r,dh=h*r;
+	for(var y=0;y<colLen;y++){
+		for(var x=0;x<rowLen;x++){
+			var c=ce('canvas'); c.width=dw; c.height=dh;
+			var ctx=c.getContext("2d");
+			if(typeof deg=="number"){
+				ctx.translate(c.width/2,c.height/2);
+				ctx.rotate(deg*Math.PI/180);
+				ctx.translate(-c.width/2,-c.height/2);
+			}
+			ctx.drawImage(img, x*w, y*h, bw, bh, -stx, -sty, dw, dh);
+			// src, srcX, srcY, srcW, srcH, drawX, drawY, drawW, drawH
+			rtv[y*rowLen+x]=(sa(c,'style','left:-'+dw/2+'px;top:-'+dh/2+'px;'));
+		}
+	}
+	return rtv;
+}
+function drawPoly(c,pt2d_vec,lineColor,width,fillColor){
+	var pv=pt2d_vec;
+	var ctx = c.getContext("2d");
+	ctx.beginPath();
+	ctx.lineWidth=width.toString();
+	ctx.moveTo(pv[0][0],pv[0][1]);
+	for(var x=1;x<pv.length;x++) ctx.lineTo(pv[x][0],pv[x][1]);
+	if(fillColor!=undefObj){ ctx.fillStyle=fillColor.toString(); ctx.fill(); }
+	if(lineColor!=undefObj){ ctx.strokeStyle=lineColor.toString(); ctx.stroke(); }
+	return sa(c,'style','left:-'+c.width/2+'px;top:-'+c.height/2+'px;');
+}
+function drawArc(c,centerXY,r,angleSE,lineColor,width,fillColor){
+	var ctx = c.getContext("2d");
+	ctx.beginPath();
+	ctx.lineWidth=width.toString();
+	ctx.arc(centerXY[0],centerXY[1],r,angleSE[0],angleSE[1]);
+	if(fillColor!=undefObj){ ctx.fillStyle=fillColor.toString(); ctx.fill(); }
+	if(lineColor!=undefObj){ ctx.strokeStyle=lineColor.toString(); ctx.stroke(); }
+	return sa(c,'style','left:-'+c.width/2+'px;top:-'+c.height/2+'px;');
+}
+function drawFont(c,fontString,fontSize,color,typeface){
+	if(typeface==undefObj) typeface="Arial";
+	var ctx = c.getContext("2d");
+	if(fontSize!=undefObj) ctx.font="800 "+fontSize+" "+typeface;
+	if(color!=undefObj) ctx.fillStyle=color;
+	ctx.fillText(fontString,-c.width/64,c.height);
+	return sa(c,'style','left:-'+(c.width/2)+'px;top:-'+c.height/2+'px;');
+}
+function clearCanvas(c)
+{
+	var ctx = c.getContext("2d");
+	ctx.clearRect(0, 0, c.width, c.height);
+	return c;
+}
+function pasteCanvas(dst,src){
+	var ctx = dst.getContext("2d");
+	ctx.drawImage(src,0,0);
+	return dst;
+}
+
+var minArr={};
+minArr.new=function newMinArr(){
+	var rtv={}; rtv.length=arguments.length;
+	for(var x=0;x<arguments.length;x++)
+		rtv[x]=arguments[x];
+	return rtv;
+};
+minArr.copy=function copyMinArr(arr){
+	var rtv={}; rtv.length=arr.length;
+	for(var x=0;x<arr.length;x++)
+		rtv[x]=arr[x];
+	return rtv;
+};
+minArr.minus=function minusMinArr(arrL,arrR){
+	var rtv={};
+	if(arrL.length<arrR.length){
+		rtv.length=arrR.length;
+		for(var x=0;x<arrL.length;x++) rtv[x]=arrL[x]-arrR[x];
+		for(var x=arrL.length;x<arrR.length;x++) rtv[x]=-arrR[x];
+	}else{
+		rtv.length=arrL.length;
+		for(var x=0;x<arrR.length;x++) rtv[x]=arrL[x]-arrR[x];
+		for(var x=arrR.length;x<arrL.length;x++) rtv[x]=-arrL[x];
+	}
+	return rtv;
+};
+minArr.add=function addMinArr(arrL,arrR){
+	var rtv={};
+	if(arrL.length<arrR.length){
+		rtv.length=arrR.length;
+		for(var x=0;x<arrL.length;x++) rtv[x]=arrL[x]+arrR[x];
+		for(var x=arrL.length;x<arrR.length;x++) rtv[x]=arrR[x];
+	}else{
+		rtv.length=arrL.length;
+		for(var x=0;x<arrR.length;x++) rtv[x]=arrL[x]+arrR[x];
+		for(var x=arrR.length;x<arrL.length;x++) rtv[x]=arrL[x];
+	}
+	return rtv;
+};
+
+</script>
+<script>
+"use strict";
+// js/_script-conf.js
+// constants
+var consts={};
+//  rankServer
+consts.rankServer="localhost:8080";
+//  id
+consts.playViewOuter='playground';
+consts.playViewInner='playground-inner';
+consts.playViewBgInner='playground-bg-inner';
+consts.playMsgPause='play-msg-pause';
+consts.playMsgStart='play-msg-start';
+consts.msgTopID='play-msgs-top';
+consts.msgBossID='play-msg-boss';
+consts.msgMidID='play-msgs-mid';
+consts.msgSkID='play-msg-skill';
+consts.msgBtmID='play-msgs-btm';
+consts.msgOthID='play-msg-oth';
+consts.msgSysID='play-msg-system';
+consts.endblk='ende';
+consts.endWin='end-win';
+consts.endLose='end-lose';
+//  id-menu
+consts.btnRestart='menu-restart';
+consts.menuReadme='menu-readme';
+consts.menuRankView='menu-ranks';
+consts.menuRankSubmit='menu-submit';
+//  id-menu-function
+consts.menuPause='menu-pause';
+consts.menuMute='menu-mute';
+consts.menuAutoShot='menu-auto-shot';
+consts.menuAutoMove='menu-auto-move';
+//  id-blk
+consts.bossID='boss';
+consts.bulletID='bullet-player';
+consts.bulletPlayerID=consts.bulletID;
+consts.bulletBossID='bullet-boss';
+consts.playerID='player';
+consts.bossPtrID='boss-ptr';
+consts.hitEffectID='hit-effect';
+consts.dropID='drop';
+consts.bossStatID='boss-stat';
+consts.playerStatID='player-stat';
+consts.touchPauseID='touch-ctl-pause';
+consts.touchMuteID='touch-ctl-mute';
+consts.timeStatID="time-stat";
+//  id-blk-img
+consts.player0imgID='img-you';
+//const.bossImgIDs=[];
+consts.bossImgID='img-boss';
+//  id-blk-img-dir-path
+consts.imgDir="img/";
+//  id-sound
+consts.soundShotID='sound-shot';
+consts.soundHitID='sound-hit';
+consts.soundBuffedID='sound-buffed';
+consts.soundBossAtkID='sound-boss-atk';
+consts.soundEndID='sound-end';
+//  id-fullScreenMsgs
+consts.msgPregame='msg-pregame';
+consts.restartConfirm='restart-yes';
+consts.restartConfirmPage='restart-confirm';
+consts.rankView='rankview';
+consts.rankView_refreshAll='rankRefresh-all';
+consts.rankView_content="rankContent";
+consts.rankView_data_time='rankData-byTime';
+consts.rankView_data_hp='rankData-byHp';
+consts.rankSubmit='ranksubmit';
+consts.rankSubmitConfirm='ranksubmit-confirm';
+//  game values
+consts.updatePeriod=41;
+consts.minY=-100;
+consts.maxY=999;
+consts.minX=-999;
+consts.maxX=999;
+consts.hideY=-9999;
+consts.maxHP=500;
+consts.maxMP=99;
+consts.maxBossClk=10000;
+consts.bulletLife=55;
+consts.bulletAtk=1;
+consts.initMoveSpeed=20;
+consts.maxBullet=Math.max(consts.bulletLife*6,64); // deprecated
+consts.maxBulletPlayer=consts.maxBullet; // replace ^ 
+consts.maxBossBullet=Math.max(consts.bulletLife*8,64); // deprecated
+consts.maxBulletBoss=consts.maxBossBullet; // replace ^ 
+consts.maxHitEffect=64;
+consts.maxDrop=8;
+consts.playerInitXY=[0,0];
+consts.bossInitXY=[0,consts.maxY-consts.initMoveSpeed*4];
+consts.hideInitXY=[0,consts.hideY];
+
+// functions' conf
+// i.e. const functions for rval of '='
+// move
+var moves={};
+moves.readme="assigned 'function's to 'obj.move'";
+// move-bullet-function
+moves.bullet={};
+	moves.bullet.move=function(targetXY){
+	};
+	moves.bullet.hardTrace=function(targetXY){
+		if(this.disappear==1) return;
+		if(this.bulletLife<=1){ this.disappear=1; }
+		else this.bulletLife-=1;
+		var ilen=dist(this.inertia);
+		var bbXY=minArr.minus(targetXY,this.XY);
+		var bblen=dist(bbXY);
+		if(ilen!=0 && bblen!=0){
+			//var ilenInv=1/ilen; // 2.2
+			var ilenInv=(this.bulletLife)/(ilen*consts.bulletLife); // 2.3
+			var bblenInv=1/bblen;
+			var totalWeight=ilenInv+bblenInv;
+			for(var bi=0;bi<this.inertia.length;bi++)
+				this.inertia[bi]=avgvw(this.inertia[bi]*ilenInv,ilenInv,bbXY[bi]*bblenInv,bblenInv);
+			var coef=ilen/dist(this.inertia);
+			for(var bi=0;bi<this.inertia.length;bi++)
+				this.inertia[bi]*=coef;
+		}
+		this.moveObj(this.inertia);
+	};
+	moves.bullet.softTrace=function(targetXY){
+		if(this.disappear==1) return;
+		if(this.bulletLife<=1 || outOfRange(this.XY,[consts.minX,consts.minY],[consts.maxX,consts.maxY])){ this.disappear=1; }
+		else this.bulletLife-=1;
+		var ilen=dist(this.inertia);
+		var bbXY=minArr.minus(targetXY,this.XY);
+		var bblen=dist(bbXY);
+		if(ilen!=0 && bblen!=0){
+			var ilenInv=1/ilen;
+			var bblenInv=1/bblen;
+			for(var bi=0;bi<this.inertia.length;bi++)
+				this.inertia[bi]=avgvw(
+					this.inertia[bi]*ilenInv,31,
+					bbXY[bi]*bblenInv,this.bulletLife/consts.bulletLife
+				);
+			var coef=ilen/dist(this.inertia);
+			for(var bi=0;bi<this.inertia.length;bi++)
+				this.inertia[bi]*=coef;
+		}
+		this.moveObj(this.inertia,minArr.new(consts.minX*2,consts.minY*2),minArr.new(consts.maxX*2,consts.maxY*2));
+	};
+	moves.bullet.edgesNoTrace=function(targetXY){
+		if(this.disappear==1) return;
+		if(this.bulletLife<=1){ this.disappear=1; }
+		else this.bulletLife-=1;
+		if(this.frameTime==1){
+			var dir=this.moveInfo[this.moveStat][1];
+			var len=dist(dir);
+			var rate=len==0?0:(this.moveSpeed/len);
+			for(var x=0;x<this.inertia.length;x++){
+				this.inertia[x]=dir[x];
+			}
+		}
+		this.moveObj(this.inertia);
+		if(this.frameTime<this.moveInfo[this.moveStat][0]){ this.frameTime+=1; }
+		else{
+			if(this.moveStat+1>=this.moveInfo.length){ this.move=moves.bullet.softTrace; }
+			else{
+				this.moveStat+=1;
+				this.frameTime=1;
+			}
+		}
+	};
+	moves.bullet.edgesTrace=function(targetXY){
+		if(this.disappear==1) return;
+		if(this.bulletLife<=1 || this.XY[1]<consts.minY){ this.disappear=1; }
+		else this.bulletLife-=1;
+		var isLast=(this.moveStat>=this.moveInfo.length);
+		if(this.frameTime==1 || isLast){
+			var dir=isLast?minArr.minus(targetXY,this.XY):this.moveInfo[this.moveStat][1];
+			var len=dist(dir);
+			var rate=len==0?0:(this.moveSpeed/len);
+			for(var x=0;x<this.inertia.length;x++) this.inertia[x]=dir[x]*rate;
+		}
+		this.moveObj(this.inertia);
+		if(isLast){
+			this.move=moves.bullet.softTrace;
+		}else{
+			if(this.frameTime<this.moveInfo[this.moveStat][0]){ this.frameTime+=1; }
+			else{
+				this.moveStat+=1;
+				this.frameTime=1;
+			}
+		}
+	};
+// move-bullet-track
+moves.bullet.track={};
+	moves.bullet.track.type1=minArr.new(
+		minArr.new(
+			minArr.new(10,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new(-24,  7)),
+			minArr.new( 2,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new(  5,-17))
+		),
+		minArr.new(
+			minArr.new( 6,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new(-25,  0)),
+			minArr.new( 6,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new(  7,-13))
+		),
+		minArr.new(
+			minArr.new( 2,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new(-20,-15)),
+			minArr.new(10,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new(  6,-11))
+		),
+		minArr.new(
+			minArr.new(10,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new( 24,  7)),
+			minArr.new( 2,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new( -5,-17))
+		),
+		minArr.new(
+			minArr.new( 6,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new( 25,  0)),
+			minArr.new( 6,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new( -7,-13))
+		),
+		minArr.new(
+			minArr.new( 2,minArr.new(  0,  0)),
+			minArr.new( 7,minArr.new( 20,-15)),
+			minArr.new(10,minArr.new(  0,  0))
+			//,minArr.new(44,minArr.new( -6,-11))
+		)
+	);
+
+</script>
+<script>
+"use strict";
+// js/_script-h-game-class.js
+// html
+function htmlGamePlayView(IDin,IDout){
+	if(IDin!=undefObj) this.in=ge(IDin);
+	if(IDout!=undefObj) this.out=ge(IDout);
+}
+function htmlGamePlayBlk(playerID,bossID,bulletPlayerID,bulletBossID,hitEffectID,dropID){
+	if(playerID!=undefObj) this.player=ge(playerID);
+	if(bossID!=undefObj) this.boss=ge(bossID);
+	if(bulletPlayerID!=undefObj) this.bulletPlayer=ge(bulletPlayerID);
+	if(bulletBossID!=undefObj) this.bulletBoss=ge(bulletBossID);
+	if(hitEffectID!=undefObj) this.hitEffect=ge(hitEffectID);
+	if(dropID!=undefObj) this.drop=ge(dropID);
+}
+function htmlSound(soundID){
+	this.primary=ge(soundID);
+	this.createMore(3);
+}
+htmlSound.prototype.createMore=function(n){
+	this.backups={}; this.backups.last=n;
+	let neededAttr={"muted":0,"type":0};
+	for(let x=1;x<=this.backups.last;x++){
+		this.backups[x]=sa(ce('audio'),'id',this.primary.id+'-backup-'+x);
+		sa(this.backups[x],'muted',this.primary.muted?"":"false");
+		sa(this.backups[x],'type',ga(this.primary,'type'));
+		ac(this.primary.parentNode,ac(this.backups[x],sa(ce('source'),'src',ga(this.primary.childNodes[0],'src'))));
+	}
+};
+htmlSound.prototype.play=function(){
+	if(muted) return;
+	if(this.primary.paused){
+		//this.primary.currentTime=0;
+		this.primary.play();
+		return;
+	}
+	for(let x=1;x<=this.backups.last;x++)
+		if(this.backups[x].paused){
+			//this.backups[x].currentTime=0;
+			this.backups[x].play();
+			return;
+		}
+	//this.backups[this.backups.last].pause();
+	////this.backups[this.backups.last].currentTime=0;
+	//this.backups[this.backups.last].play();
+};
+htmlSound.prototype.mute=function(muted){
+	this.primary.muted=muted;
+	for(let x=1;x<this.backups.last;x++) this.backups[x].muted=muted;
+};
+// key map
+function kbObj(){
+	// move
+	this.left=c2i("A");
+	this.down=c2i("S");
+	this.up=c2i("W");
+	this.right=c2i("D");
+	this.atk=c2i("O");
+	this.ultra=c2i("U");
+	// sys
+	this.pause=c2i("P");
+	this.mute=c2i("M");
+	this.restart=c2i("R");
+	this.help=c2i("H");
+	this.close=27;
+	//this.msg=c2i("G");
+}
+// storage
+function fixedCircularBuffer(size){
+	this.iter=0;
+	this.length=size;
+	for(let x=0;x<this.length;x++) this[x]={};
+}
+fixedCircularBuffer.prototype.getNext=function(){
+	let rtvit=this.iter;
+	this.iter=(this.iter+1)%this.length;
+	return this[rtvit];
+};
+fixedCircularBuffer.prototype.curr=function(){
+	return this[this.iter];
+};
+function setQ(begin,end){
+	this.buff=[];
+	this.base=begin;
+	this.bitMap=[]; this.bitMap.length=end-begin;
+	for(let x=0;x<this.bitMap.length;x++) this.bitMap[x]=0;
+}
+setQ.prototype.push=function(n){
+	if(this.bitMap[n-this.base]) return;
+	this.bitMap[n-this.base]=1;
+	this.buff.push(n);
+};
+setQ.prototype.pop=function(n){
+	if(this.buff[0]==undefObj) return;
+	this.bitMap[this.buff[0]-this.base]=0;
+	this.buff.shift();
+};
+// msg
+function classMsgQ(idBase,maxCnt,maxClk,htmlMsg){
+	this.buff=[];
+	this.idBase=idBase;
+	this.maxCnt=maxCnt;
+	this.maxClk=maxClk;
+	this.sn=0;
+	this.html=htmlMsg;
+}
+classMsgQ.prototype.update=function(){
+	while(this.buff.length!=0 
+		&& this.buff[0].clk==0 
+		|| this.buff.length>this.maxCnt){
+		this.buff[0].html.parentNode.removeChild(this.buff[0].html);
+		this.buff.shift();
+	}
+	for(let x=0;x<this.buff.length;x++){
+		this.buff[x].html.style.opacity=this.buff[x].clk/this.maxClk+"";
+		this.buff[x].clk=this.buff[x].clk-1;
+	}
+}
+classMsgQ.prototype.newMsg=function(msgString,addedClk){
+	if(nomsg) return;
+	let msg={};
+	msg.msg=msgString;
+	msg.clk=this.maxClk;
+	if(addedClk!=undefObj) msg.clk+=addedClk;
+	msg.id="msg-"+this.idBase+this.sn;
+	this.sn=(this.sn+1)%256;
+	this.buff.push(msg);
+	let tmp=ge(msg.id);
+	if(tmp!=null) tmp.parentNode.removeChild(tmp);
+	msg.html=sa(ce('div'),'id',msg.id);
+	msg.html.innerHTML=msg.msg;
+	ac(this.html,msg.html);
+	this.update();
+};
+classMsgQ.prototype.clearMsgs=function(){
+	while(this.buff.length!=0){
+		let tmp=ge(this.buff[0].id);
+		if(tmp!=null) tmp.parentNode.removeChild(tmp);
+		this.buff.shift();
+	}
+}
+// obj
+function initObj(type,id,canvas,XY,WH,inertia,speed,maps,mapName,HP,MP){
+	this.type=type;
+	this.id=id.toString();
+	this.canvas=canvas;
+	this.animated=(isundef(canvas.length)==false);
+	this.animatedIt=0;
+	this.XY=minArr.copy(XY);
+		this.XY.init=minArr.copy(this.XY);
+	this.disappear=0;
+	//this.move=howToMove;
+	
+	// common
+	switch(type){
+	case "player":
+	case "bullet":
+	case "drop":
+	case "boss":
+		this.mHP=Number(HP);
+		this.mMP=Number(MP);
+	case "effect":
+		this.WH=minArr.copy(WH);
+		this.speed=speed;
+		this.maps=maps;
+		this.mapName=mapName;
+	}
+	switch(type){
+	case "player":
+	case "bullet":
+	case "drop":
+	case "effect":
+		this.inertia={};
+			this.inertia.length=inertia.length;
+			for(let x=0;x<inertia.length;x++) this.inertia[x]=inertia[x];
+	}
+	// specialized
+	switch(type){
+	case "player":
+		break;
+	case "boss":
+		break;
+	case "bullet":
+		this.isBullet=1;
+		this.disappear=1;
+		this.maps=maps;
+		this.mapName=mapName;
+		this.tracingBullet=0;
+		this.bulletLife=0;
+		break;
+	case "effect":
+		this.isEffect=1;
+		this.disappear=1;
+		break;
+	case "drop":
+		this.isDrop=1;
+		this.disappear=1;
+		break;
+	default:
+		break;
+	}
+	this.reset();
+}
+initObj.prototype.reset=function(){
+	// for all
+	for(let i=0;i<this.XY.init.length;i++) this.XY[i]=this.XY.init[i];
+	// common
+	switch(this.type){
+	case "player":
+		this.stat={};
+	case "drop":
+		for(let i=0;i<this.inertia.length;i++) this.inertia[i]=0;
+	case "boss":
+		this.cHP=this.mHP;
+		this.cMP=this.mMP;
+	}
+	// specialized
+	switch(this.type){
+	case "boss":
+		this.bossClk=0;
+		this.atkTimes=0;
+		this.atkType=-1;
+		this.atkcd={};
+			this.atkcd.length=16;
+			for(let x=0;x<this.atkcd.length;x++) this.atkcd[x]=0;
+		this.crazy=0;
+	case "player":
+		this.disappear=0;
+		break;
+	case "bullet":
+	case "drop":
+	case "effect":
+		this.disappear=1;
+		break;
+	default:
+		break;
+	}
+	if(ge(this.id)!=null){
+		this.refresh();
+		this.refresh();
+	}
+	//return this;
+};
+initObj.prototype.moveObj=function(dXY,minXY,maxXY){
+	let tmpXY={}; tmpXY.length=this.XY.length;
+	for(let x=0;x<this.XY.length;x++) tmpXY[x]=this.XY[x]+dXY[x];
+	if(minXY!=undefObj) for(let x=0;x<tmpXY.length;x++) if(tmpXY[x]<minXY[x]) tmpXY[x]=minXY[x];
+	if(maxXY!=undefObj) for(let x=0;x<tmpXY.length;x++) if(tmpXY[x]>maxXY[x]) tmpXY[x]=maxXY[x];
+	if(this.id.slice(0,4)=="ptr-") this.XY=tmpXY;
+	else this.mapUpdateTo(tmpXY);
+	//this.XY=tmpXY;
+	//return this;
+};
+initObj.prototype.mapUpdateTo=function(XY){
+	this.maps[this.mapName].updateTo(this,XY);
+	//return this;
+};
+initObj.prototype.move=function(game){};
+initObj.prototype.refreshHide=function refreshHide(){
+	this.inertia=[0,0];
+	this.maps[this.mapName].remove(this);
+	this.XY[1]=consts.hideY;
+	//return this;
+};
+initObj.prototype.refresh=function refresh(){
+	if(this.disappear){
+		this.refreshHide();
+	}
+	else if(this.animated){
+		while(this.html.childNodes.length) this.html.removeChild(this.html.childNodes[0]);
+		let it=this.animatedIt; this.animatedIt=(this.animatedIt+1)%this.canvas.length;
+		ac(this.html,this.canvas[it]);
+		if(this.animatedIt==0 && this.isEffect==1) this.disappear=1;
+	}
+	if(typeof this.html.style!="object"){
+		sa(this.html,'style','left:'+this.XY[0]+'px;top:'+this.XY[1]+'px;');
+	}
+	else{
+		this.html.style.left=this.XY[0]+'px';
+		this.html.style.top =this.XY[1]+'px';
+		//this.html.style.transform="rotate()";
+	}
+	//return this;
+};
+// game
+function initGame(htmlGamePlayBlk){
+
+	// parseArg
+
+	// initializing
+	this.endless=0;
+	this.ende=0;
+	this.frameTime=0;
+	this.lastResult={};
+	//this.mod=[];
+	//this.mod.char=[];
+	//this.mod.bullet=[];
+	{
+		let Dx=consts.maxX-consts.minX, Dy=consts.maxY-consts.minY;
+		let x=consts.minX-Dx,X=consts.maxX+Dx;
+		let y=consts.hideY,Y=consts.maxY+Dy;
+		this.mapEffect=newMap([[x,X],[y,Y]],[512,512]);
+		this.map      =newMap([[x,X],[y,Y]],[256,256]);
+		this.maps={};
+		this.maps.mapPhy=this.map;
+		this.maps.mapEff=this.mapEffect;
+	}
+	
+	this.players=[];
+	this.players[0]=new initObj("player",'player00',
+		drawImgS(ge(consts.player0imgID),5,2),
+		consts.playerInitXY,[40,40],
+		[0,0],consts.initMoveSpeed,
+		this.maps,'mapPhy',
+		consts.maxHP,consts.maxMP);
+	this.bullets=new fixedCircularBuffer(consts.maxBullet);
+	this.bullets.parentId=htmlGamePlayBlk.bulletPlayer.id;
+	{
+		let r=6,w=r*2,h=r*2;
+		for(let x=0;x<consts.maxBullet;x++){
+			this.bullets[x]=new initObj("bullet",this.bullets.parentId+'-'+x,
+				//drawImg(newCanvas(40,40),ge('img-bullet')),
+				drawArc(newCanvas(40,40),[20,20],r,[0,2*Math.PI],'rgba(0,23,255,1)','0px','rgba(0,23,255,1)'),
+				//drawFont(newCanvas(40,20),'NO!!','18px',"rgba(255,255,255,1)"),
+				consts.hideInitXY,[w,h],
+				[0,0],5,
+				this.maps,'mapPhy',
+				consts.bulletAtk,0
+			);
+			this.bullets[x].disappear=1;
+			this.bullets[x].tracingBullet=1;
+			this.bullets[x].bulletLife=consts.bulletLife;
+		}
+	}
+	this.bullets.q=new setQ(0,consts.maxBullet);
+	this.boss=[];
+	let bossids=[consts.bossImgID];
+	for(let x=0;x<bossids.length;x++)
+	{
+		this.boss[0]=initBoss(htmlGamePlayBlk.boss.id+'-'+bossids[x],
+			//drawImg(newCanvas(),ge(bossids[x])),
+			drawImgS(ge(bossids[x]),5,2),
+			consts.bossInitXY,[80,80],
+			[0,0],consts.initMoveSpeed/2,
+			this.maps,'mapPhy',
+			consts.maxHP*100,consts.maxMP*10);
+		// this.boss[x].lv=10*x;
+	}
+	//this.boss[0].skill[0];
+	this.bossBullets=new fixedCircularBuffer(consts.maxBossBullet);
+	this.bossBullets.parentId=htmlGamePlayBlk.bulletBoss.id;
+	{
+		let r=7,w=r*2,h=r*2;
+		for(let x=0;x<consts.maxBossBullet;x++){
+			this.bossBullets[x]=new initObj("bullet",this.bossBullets.parentId+'-'+x,
+				//drawImg(newCanvas(40,40),ge('test-arrow'),180),
+				drawArc(newCanvas(40,40),[20,20],r,[0,2*Math.PI],'rgba(255,23,0,1)','0px','rgba(255,23,0,1)'),
+				//drawFont(newCanvas(100,20),'UPGRADE','18px',"rgba(255,255,255,1)"),
+				consts.hideInitXY,[w,h],
+				[0,0],consts.initMoveSpeed,
+				this.maps,'mapPhy',
+				consts.bulletAtk,0
+			);
+			this.bossBullets[x].tracingBullet=1;
+			this.bossBullets[x].bulletLife=consts.bulletLife;
+		}
+	}
+	this.bossBullets.q=new setQ(0,consts.maxBossBullet);
+	this.hitEffectsPlayer=new fixedCircularBuffer(consts.maxHitEffect);
+	for(let x=0;x<consts.maxHitEffect;x++){
+		this.hitEffectsPlayer[x]=new initObj("effect",htmlGamePlayBlk.hitEffect.id+'-player-'+x,
+			newHitEffectCanvasStr(8,8,1.5,7,
+				[23,23,255],1,
+				'○'),
+			consts.hideInitXY,[0,0],
+			[0,0],0,
+			this.maps,'mapEff'
+		);
+	}
+	this.hitEffectsBoss=new fixedCircularBuffer(consts.maxHitEffect);
+	for(let x=0;x<consts.maxHitEffect;x++){
+		this.hitEffectsBoss[x]=new initObj("effect",htmlGamePlayBlk.hitEffect.id+'-boss-'+x,
+			newHitEffectCanvasStr(8,8,2.5,7,
+				[255,23,23],0.5,
+				'○'),
+			consts.hideInitXY,[0,0],
+			[0,0],0,
+			this.maps,'mapEff'
+		);
+	}
+	this.hitEffectsEnhance=new fixedCircularBuffer(consts.maxHitEffect);
+	for(let x=0;x<consts.maxHitEffect;x++){
+		this.hitEffectsEnhance[x]=new initObj("effect",htmlGamePlayBlk.hitEffect.id+'-enhance-'+x,
+			newHitEffectCanvasStr(16,16,8,7,
+				[23,255,23],0.75,
+				'○'),
+			consts.hideInitXY,[0,0],
+			[0,0],0,
+			this.maps,'mapEff'
+		);
+	}
+	this.dropTemplate={};
+	this.dropTemplate[0]; // atk
+	this.dropTemplate[1]; // more bullets @once
+	this.dropTemplate[2]; // longer distance
+	this.dropTemplate[3]; // faster
+	this.dropTemplate[4]; // tracing
+	// .enhance={'batk':1,'bsplit':1,'blife':1,'bspeed':1,'btrace':1};
+	this.drops=new fixedCircularBuffer(consts.maxDrop);
+	this.drops.parentId=htmlGamePlayBlk.drop.id;
+	for(let x=0;x<this.drops.length;x++){
+		switch(x%5){
+		default:
+			break;
+		case 2:
+		case 3:
+		case 0:
+			this.drops[x]=new initObj("drop",this.drops.parentId+'-'+x,
+				newDropCanvasImg(ge('img-atk'),0.5,'roll',{'x':23,'y':11}),
+				consts.hideInitXY,[40,40],
+				[0,-5],5,
+				this.maps,'mapPhy',
+				0,0
+			);
+			this.drops[x].msg="atk++";
+			this.drops[x].enhance={'batk':1};
+			break;
+		case 1:
+			let h=drawImg(newCanvas(),ge('img-atk'),0,undefObj,undefObj,0,0,0.5,0.5);
+			let q=drawImg(newCanvas(),h,0,undefObj,undefObj,0,0,0.5,0.5);
+			clearCanvas(h);
+			drawImg(h,q,0,h.width,h.height, q.width*0.5,    0, 1,1);
+			drawImg(h,q,0,h.width,h.height, 0,       q.height, 1,1);
+			drawImg(h,q,0,h.width,h.height, q.width, q.height, 1,1);
+			this.drops[x]=new initObj("drop",this.drops.parentId+'-'+x,
+				newDropCanvasImg(h,1,'roll',{'x':23,'y':11}),
+				consts.hideInitXY,[40,40],
+				[0,-5],5,
+				this.maps,'mapPhy',
+				0,0
+			);
+			this.drops[x].msg="split++";
+			this.drops[x].enhance={'bsplit':1};
+			break;
+		case 4:
+			this.drops[x]=new initObj("drop",this.drops.parentId+'-'+x,
+				newDropCanvasImg(ge('img-trace'),0.5,'roll',{'x':23,'y':11}),
+				consts.hideInitXY,[40,40],
+				[0,-5],5,
+				this.maps,'mapPhy',
+				0,0
+			);
+			this.drops[x].msg="trace++";
+			this.drops[x].enhance={'btrace':1};
+			break;
+		}
+	}
+	// appendChilds
+	let divs;
+	divs=this.packObj(this.players);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.player,divs[x]);
+	divs=this.packObj(this.bullets);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.bulletPlayer,divs[x]);
+	divs=this.packObj(this.boss);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.boss,divs[x]);
+	divs=this.packObj(this.bossBullets);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.bulletBoss,divs[x]);
+	divs=this.packObj(this.hitEffectsPlayer);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.hitEffect,divs[x]);
+	divs=this.packObj(this.hitEffectsBoss);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.hitEffect,divs[x]);
+	divs=this.packObj(this.hitEffectsEnhance);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.hitEffect,divs[x]);
+	divs=this.packObj(this.drops);
+	for(let x=0;x<divs.length;x++) ac(htmlGamePlayBlk.drop,divs[x]);
+	this.reset();
+}
+initGame.prototype.resetMap=function(){
+	this.map.cleanList();
+	let arr;
+	arr=this.players;
+	for(let x=0;x<arr.length;x++) arr[x].mapUpdateTo(arr[x].XY);
+	arr=this.boss;
+	for(let x=0;x<arr.length;x++) arr[x].mapUpdateTo(arr[x].XY);
+};
+initGame.prototype.reset=function reset(){
+	this.frameTime=0;
+	let v;
+	// clear key state
+	v=keystat_pre;
+	for(let x=0;x<v.length;x++) v[x]=0;
+	v=keystat;
+	for(let x=0;x<v.length;x++) v[x]=0;
+	// init game var
+	v=this.players;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.boss;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.bullets;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.bossBullets;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.hitEffectsPlayer;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.hitEffectsBoss;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.hitEffectsEnhance;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	v=this.drops;
+	for(let x=0;x<v.length;x++) v[x].reset();
+	// adjust camera
+	let stl=htmlEle.playView.in.style;
+	stl.left="0px";
+	stl.top="0px";
+	moveCamera(this.players[0].XY,htmlEle.playView,1);
+	// hide pause
+	if(pause) pauseSwitch();
+	// clear ends
+	htmlEle.ende.lose.style.display="none";
+	htmlEle.ende.win.style.display="none";
+	this.ende=0;
+	// refresh pannel
+	updatePannel(this,htmlEle.status);
+	// clear msgs
+	for(let x in msgQ) if(x!='sys') msgQ[x].clearMsgs();
+	// show start
+	initStart();
+	// reset searching map
+	this.resetMap();
+};
+initGame.prototype.packObj=function(objs){
+	let divs={};
+	divs.length=objs.length;
+	for(let x=0;x<objs.length;x++)
+	{
+		divs[x]=sa(ce('div'),'style',"left:"+objs[x].XY[0]+"px;top:"+objs[x].XY[1]+"px;");
+		objs[x].html=sa(ac(divs[x],(objs[x].animated)?objs[x].canvas[0]:objs[x].canvas),'id',objs[x].id);
+	}
+	return divs;
+};
+initGame.prototype.getNearestBossIt=function(XY){
+	let minDistIt=0;
+	for(let bb=1;bb<this.boss.length;bb++){
+		if(dist(XY,this.boss[bb].XY)<dist(XY,this.boss[minDistIt].XY))
+			minDistIt=bb;
+	}
+	return minDistIt;
+};
+initGame.prototype.createBullet=function(bulletList,strtXY,emitDir,addedSpeed,bulletLife,addedatk,moveFunction,moveInfo){
+	bulletList.q.push(bulletList.iter);
+	let b=bulletList.getNext();
+	b.disappear=0; b.bulletLife=bulletLife;
+	b.move=moveFunction;
+	b.moveSpeed=addedSpeed+b.speed;
+	if(b.cHP!=b.mHP+addedatk){
+		b.cHP=b.mHP+addedatk;
+		let rate=(1+addedatk/10);
+		let csstf="scale("+rate+","+rate+") rotateX(180deg)";
+		if(b.canvas.length==undefObj) b.canvas.style.transform=csstf;
+		else for(let x=0;x<b.canvas.length;x++) b.canvas[x].style.transform=csstf;
+	}
+	b.moveStat=0;
+	b.frameTime=1;
+	b.moveInfo=moveInfo; // [ [#frames,dir], ... ]
+	let rate=(b.moveSpeed)/dist(emitDir);
+	for(let x=0;x<emitDir.length;x++) b.inertia[x]=emitDir[x]*rate;
+	b.mapUpdateTo(strtXY);
+	//return b;
+};
+initGame.prototype.createEffect=function(effectList,XY,dXY){
+	let he=effectList.getNext();
+	if(he.html==undefObj) he.html=ge(he.id);
+	if(he.html==null) return;
+	he.mapUpdateTo(XY);
+	//for(let x=0;x<XY.length;x++) he.XY[x]=XY[x];
+	for(let x=0;x<XY.length;x++) he.inertia[x]=dXY[x]/4;
+	while(he.html.childNodes.length) he.html.removeChild(he.html.childNodes[0]);
+	ac(he.html,he.canvas[0]);
+	he.animatedIt=1%he.canvas.length;
+	he.disappear=0;
+};
+initGame.prototype.createHitEffectPlayer=function(XY,dXY){ this.createEffect(this.hitEffectsPlayer,XY,dXY); };
+initGame.prototype.createHitEffectBoss=function(XY,dXY){ this.createEffect(this.hitEffectsBoss,XY,dXY); };
+initGame.prototype.createHitEffectEnhance=function(XY,dXY){ this.createEffect(this.hitEffectsEnhance,XY,dXY); };
+initGame.prototype.createDrop=function(XY,dXY){
+	let dp=this.drops.getNext();
+	if(dp.html==undefObj) dp.html=ge(dp.id);
+	if(dp.html==null) return;
+	//dp.html.style.opacity="1";
+	dp.mapUpdateTo(XY);
+	for(let x=0;x<XY.length;x++) dp.inertia[x]=dXY[x];
+	while(dp.html.childNodes.length) dp.html.removeChild(dp.html.childNodes[0]);
+	ac(dp.html,dp.canvas[0]);
+	dp.animatedIt=1%dp.canvas.length;
+	dp.disappear=0;
+};
+initGame.prototype.movePlayer0=function(keystat,htmlSound){
+	let s=this.players[0].speed;
+	let XY=this.players[0].XY;
+	let l=keystat[kbdef.left];
+	let d=keystat[kbdef.down];
+	let u=keystat[kbdef.up];
+	let r=keystat[kbdef.right];
+	let a=keystat[kbdef.atk];
+	let dXY=[(r-l)*s,(u-d)*s];
+	this.players[0].moveObj(dXY,[consts.minX,consts.minY],[consts.maxX,consts.maxY]);
+	//moveCamera(this.players[0].XY,htmlEle.playView);
+	if(a){
+		let atkinc=0; if(this.players[0].stat.batk!=undefObj) atkinc=this.players[0].stat.batk;
+		htmlSound.global.shot.play();
+		let life_1=parseInt(consts.bulletLife  );
+		let life_2=parseInt(consts.bulletLife/2);
+		let bmove=((this.players[0].stat.btrace!=undefObj) && this.players[0].stat.btrace>0)?(moves.bullet.hardTrace):(moves.bullet.softTrace);
+		if((this.players[0].stat.btrace!=undefObj) && this.players[0].stat.btrace>0){
+			this.createBullet(
+				this.bullets, this.players[0].XY, [0,1], this.players[0].speed, life_1, atkinc,
+				moves.bullet.hardTrace
+			);
+		}else{
+			this.createBullet(
+				this.bullets, this.players[0].XY, [0,1], this.players[0].speed, life_1, atkinc,
+				moves.bullet.softTrace
+			);
+		}
+		// this.players[0].stat.bsplit > 0
+		{
+			for(let x=1;x<4 && x<=this.players[0].stat.bsplit;x++)
+			{
+				let bmove=(x<this.players[0].stat.btrace)?(moves.bullet.hardTrace):(moves.bullet.softTrace);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [ 1+x,7], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [-1-x,7], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+			}
+		}
+		/*
+		if(this.players[0].stat.bsplit!=undefObj) switch(this.players[0].stat.bsplit){
+		default:{
+				let bmove=(2<this.players[0].stat.btrace)?(moves.bullet.hardTrace):(moves.bullet.softTrace);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [ 1,1], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [-1,1], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+			}
+		case 1:{
+				let bmove=(1<this.players[0].stat.btrace)?(moves.bullet.hardTrace):(moves.bullet.softTrace);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [ 1,2], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+				this.createBullet(
+					this.bullets, this.players[0].XY, [-1,2], this.players[0].speed, life_1, atkinc,
+					bmove
+				);
+			}
+		}
+		*/
+	}
+};
+// move-boss
+//initGame.prototype.newMoveBossAtkInfo=function(mp,frame,cd,func){ return {"mp":mp,"frame":frame,"cd":cd,"func":func}; };
+initGame.prototype.moveBossAtk=function(bossit,htmlSound){
+	let life_1=parseInt(consts.bulletLife  );
+	let life_2=parseInt(consts.bulletLife/2);
+	let life_4=parseInt(consts.bulletLife/4);
+	let atk=0;
+	//let typecd=this.boss[bossit].atkcd[this.boss[bossit].atkType];
+	let mp=[-2,2,3,5,7,11];
+	let frame=[9,29,29,39,19,9];
+	let cd=[0,0,9,19,19,39];
+	if(this.boss[bossit].atkType==(this.boss[bossit].crazy?-5:-10)){
+		let lv={0:2+cd[0]-this.boss[bossit].atkcd[0]}; lv.length=cd.length;
+		if(this.boss[bossit].crazy==0 && this.boss[bossit].cHP*2<this.boss[bossit].mHP) lv[0]+=this.boss[bossit].mHP-this.boss[bossit].cHP;
+		for(let x=1;x<lv.length;x++) lv[x]=1+cd[x]-this.boss[bossit].atkcd[x]+lv[x-1];
+		let rnd=Math.random()*lv[lv.length-1];
+		this.boss[bossit].atkType=lowerbound(lv,rnd);
+		if(this.boss[bossit].crazy && this.boss[bossit].cMP<mp[this.boss[bossit].atkType]*frame[this.boss[bossit].atkType])
+			this.boss[bossit].atkType=Math.random()<0.125?999:0;
+	}
+	if(this.boss[bossit].atkType>=0) switch(this.boss[bossit].atkType){
+	case 0:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>frame[this.boss[bossit].atkType] || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+			htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			msgQ.boss.newMsg("recovering MP");
+		}
+		if(this.boss[bossit].crazy==0 && this.boss[bossit].cHP*2<this.boss[bossit].mHP){
+			if(this.boss[bossit].atkTimes==frame[this.boss[bossit].atkType]) this.boss[bossit].crazy=1;
+			if((this.boss[bossit].atkTimes&3)==0){
+				this.createHitEffectEnhance(this.boss[bossit].XY,[0,0]);
+				htmlSound.bossAtk['T'].play();
+				if(this.boss[bossit].atkTimes==0) msgQ.boss.newMsg("crazy");
+			}
+		}
+		this.boss[bossit].cMP-=((this.boss[bossit].crazy)?mp[this.boss[bossit].atkType]*3:mp[this.boss[bossit].atkType]); if(this.boss[bossit].cMP>this.boss[bossit].mMP) this.boss[bossit].cMP=this.boss[bossit].mMP;
+		atk=1;
+		break;
+	case 1:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>29 || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+			htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			//msgQ.boss.newMsg("");
+		}
+		if(this.boss[bossit].crazy==1 || this.boss[bossit].atkTimes&1){
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [-1,-1], this.boss[bossit].speed, life_1, 0,
+				moves.bullet.softTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 0,-1], this.boss[bossit].speed, life_1, 0,
+				moves.bullet.softTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 1,-1], this.boss[bossit].speed, life_1, 0,
+				moves.bullet.softTrace
+			);
+			this.boss[bossit].cMP-=mp[this.boss[bossit].atkType];
+		}
+		atk=1;
+		break;
+	case 2:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>29 || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+		   htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			msgQ.boss.newMsg("one traced");
+		}
+		if(this.boss[bossit].crazy==1 || this.boss[bossit].atkTimes&1){
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 0,-1], this.boss[bossit].speed-5, life_1, 0,
+				moves.bullet.hardTrace
+			);
+			this.boss[bossit].cMP-=mp[this.boss[bossit].atkType];
+		}
+		atk=1;
+		break;
+	case 3:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>39 || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+			htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			msgQ.boss.newMsg("rain");
+		}
+		if(this.boss[bossit].crazy==1 || this.boss[bossit].atkTimes&1){
+			let tracks=moves.bullet.track.type1;
+			for(let x=0;x<tracks.length;x++)
+				game.createBullet(
+					game.bossBullets, this.boss[bossit].XY, {}, this.boss[bossit].speed, life_1, 0,
+					moves.bullet.edgesTrace, tracks[x]
+				);
+			this.boss[bossit].cMP-=mp[this.boss[bossit].atkType];
+		}
+		atk=1;
+		break;
+	case 4:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>19 || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+			htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			msgQ.boss.newMsg("cannon");
+		}
+		if(this.boss[bossit].crazy==1 || this.boss[bossit].atkTimes&1){
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 1, 0], this.boss[bossit].speed-5, life_4, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 1,-2], this.boss[bossit].speed, life_1, 0,
+				moves.bullet.softTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 0,-1], this.boss[bossit].speed-5, life_2, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [-1,-2], this.boss[bossit].speed, life_1, 0,
+				moves.bullet.softTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [-1, 0], this.boss[bossit].speed-5, life_4, 0,
+				moves.bullet.hardTrace
+			);
+			this.boss[bossit].cMP-=mp[this.boss[bossit].atkType];
+		}
+		atk=1;
+		break;
+	case 5:
+		if(this.boss[bossit].atkcd[this.boss[bossit].atkType]>0){
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes>9 || this.boss[bossit].cMP<mp[this.boss[bossit].atkType]){
+			this.boss[bossit].atkTimes=0;
+			this.boss[bossit].atkcd[this.boss[bossit].atkType]=cd[this.boss[bossit].atkType];
+			this.boss[bossit].atkType=-1;
+			break;
+		}
+		if(this.boss[bossit].atkTimes==0){
+		   htmlSound.bossAtk[this.boss[bossit].atkType].play();
+			msgQ.boss.newMsg("multiple traced");
+		}
+		if(this.boss[bossit].crazy==1 || this.boss[bossit].atkTimes&1){
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 2,-1], this.boss[bossit].speed- 5, life_1, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 1,-2], this.boss[bossit].speed-10, life_2, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [ 0,-1], this.boss[bossit].speed- 5, life_1, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [-1,-2], this.boss[bossit].speed-10, life_2, 0,
+				moves.bullet.hardTrace
+			);
+			game.createBullet(
+				game.bossBullets, this.boss[bossit].XY, [-2,-1], this.boss[bossit].speed- 5, life_1, 0,
+				moves.bullet.hardTrace
+			);
+			this.boss[bossit].cMP-=mp[this.boss[bossit].atkType];
+		}
+		atk=1;
+		break;
+	default:
+		if(this.boss[bossit].atkTimes==0){
+			htmlSound.bossAtk[this.boss[bossit].atkType,0].play();
+			msgQ.boss.newMsg("recovering all MP");
+		}
+		this.createHitEffectEnhance(this.boss[bossit].XY,[0,0]);
+		this.boss[bossit].cMP=this.boss[bossit].mMP;
+		this.boss[bossit].atkType=-1;
+		break;
+	}else{
+		this.boss[bossit].atkType-=1;
+	}
+	if(atk) this.boss[bossit].atkTimes+=1;
+	for(let x=0;x<this.boss[bossit].atkcd.length;x++)
+		if(this.boss[bossit].atkcd[x]>0)
+			this.boss[bossit].atkcd[x]-=1;
+};
+initGame.prototype.moveDrop=function(){
+	for(let x=0;x<this.drops.length;x++){
+		if(this.drops[x].disappear==1) continue;
+		if(this.drops[x].XY[1]<consts.minY) this.drops[x].disappear=1;
+		this.drops[x].moveObj(this.drops[x].inertia);
+	}
+};
+initGame.prototype.updateResult=function(){
+	this.lastResult.time=game.frameTime*consts.updatePeriod/1000;
+	this.lastResult.php=this.players[0].cHP;
+	this.lastResult.bhp=this.boss[0].cHP;
+	this.lastResult.c=this.boss[0].crazy;
+};
+initGame.prototype.isNoRankDataToSubmit=function(){ return (this.lastResult.time==undefObj || this.lastResult.php==undefObj || this.lastResult.bhp==undefObj ); };
+initGame.prototype.submitResult=function(){
+	if(this.isNoRankDataToSubmit()) return;
+	const host=consts.rankServer;
+	const query='submit'+JSON.stringify(this.lastResult);
+	var xx=new XMLHttpRequest();
+	xx.onreadystatechange=function(){ if(this.readyState==4 && this.status.toString().slice(0,1)=='2'){ msgQ.sys.newMsg('submission succeeded'); if(rankRefreshAll!=undefObj) rankRefreshAll(); } };
+	xx.open('GET',"http://"+host+'?'+query, true);
+	xx.send(null);
+	this.lastResult={};
+};
+initGame.prototype.loadRanks=function(){
+};
+// bullet
+function bulletTrackPartInfo(timeMax,attack,isTrace,targetXY,speedType,speed_s,speed_e,speed_m){
+	this.time=timeMax;
+	this.attack=attack;
+	if(isTrace) this.targetXY=targetXY;
+	else{
+		this.targetXY={};
+			this.targetXY.length=targetXY.length;
+			for(let x=0;x<this.targetXY.length;x++) this.targetXY[x]=targetXY[x];
+	}
+	this.speedType=(typeof speedType=="number")?speedType:this.speedTypeString2int[speedType];
+	this.speed_s=speed_s; // start speed
+	this.speed_e=speed_e; // last speed
+	this.speed_m=speed_m; // middle speed for higher order
+}
+bulletTrackPartInfo.prototype.speedTypeString2int=['linear','second-order','exp'];
+function bulletTrackPart(type,time,info){
+	this.type=type;
+	this.time=time;
+	this.info=info;
+}
+bulletTrackPart.prototype.dXY=function(bulletObj){
+	let speed=0;
+	let dir={};
+		dir.length=this.targetXY.length;
+		for(let x=0;x<this.targetXY.length;x++) dir[x]=this.targetXY[x]-bulletObj.XY[x];
+	switch(this.speedType){
+	default:
+	case 0:
+		speed=(this.speed_e-this.speed_s)*(bulletObj.timePass/this.timeMax)+this.speed_s;
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	}
+	let ratio=speed/dist(dir);
+	for(let x=0;x<dir.length;x++) dir[x]*=ratio;
+	return dir;
+};
+function bulletTrackModel(strt,dure,hitt,ende){
+	this.strt=strt;
+	this.dure=dure;
+	this.hitt=hitt;
+	this.ende=ende;
+}
+// skill
+function initSkill(prob,mp,bullets,targeting){
+	if(targeting==undefObj) targeting=0;
+	this.prob=prob;
+	this.mp=mp;
+	this.bullets=bullets;
+	this.targeting=targeting;
+}
+
+</script>
+<script>
+"use strict";
+// js/_script-h-game-function.js
+function newIP(id,path){var rtv=[];rtv.id=id;rtv.path=path;return rtv;}
+function newTB(id,imgid,deg,kb){var rtv=[];rtv.id=id;rtv.imgid=imgid;rtv.deg=deg;rtv.kb=kb;return rtv;}
+// 
+function newMap(dimRanges,deltas){
+	function newMap_recur(dimRanges,deltas){
+		var rtv=[];
+		if(deltas.length!=0){
+			var rtvlen=parseInt(1+(dimRanges[0][1]-dimRanges[0][0])/deltas[0]);
+			var nextDim=[],nextDel=[];
+			for(var x=1;x<dimRanges.length;x++) nextDim[x-1]=dimRanges[x];
+			for(var x=1;x<deltas.length;x++) nextDel[x-1]=deltas[x];
+			for(var x=0;x<rtvlen;x++) rtv[x]=newMap_recur(nextDim,nextDel);
+		}
+		return rtv;
+	}
+	function _newBlk(gcLens){
+		function newBlk_recur(arr,st,ed,lv){
+			if(st+2>=ed) return;
+			arr.lv=lv;
+			var tmp={};
+			tmp.min=st;
+			tmp.max=ed;
+			tmp.sth=0;
+			arr.push(tmp);
+			var m=(st+ed)>>1;
+			newBlk_recur(arr,st,m,lv+1);
+			newBlk_recur(arr,m,ed,lv+1);
+		}
+		var rtv=[];
+		for(var x=0;x<lens.length;x++){
+			rtv[x]=[];
+			//rtv[x].lv=0; // merged into new_recur()
+			newBlk_recur(rtv[x],0,gcLens[x]+1);
+		}
+	}
+	if(dimRanges.length!=deltas.length) throw "lengths dismatch";
+	// if(dimRanges.length==0) return rtv; // store ptrs2objs
+	var rtv={};
+	var self=rtv;
+	rtv.deltas=[];
+	for(var x=0;x<deltas.length;x++) rtv.deltas[x]=deltas[x];
+	rtv.dimRanges=[];
+	for(var x=0;x<dimRanges.length;x++){
+		rtv.dimRanges[x]=[];
+		rtv.dimRanges[x][0]=dimRanges[x][0];
+		rtv.dimRanges[x][1]=dimRanges[x][1];
+	}
+	rtv._getGridCoord=function(self,coord){
+		var rtv={};
+		rtv.length=coord.length;
+		for(var x=0;x<coord.length;x++)
+			rtv[x]=parseInt((coord[x]-self.dimRanges[x][0])/self.deltas[x]);
+		return rtv;
+	};
+	rtv.getGridCoord=function(coord){this._getGridCoord(this,coord);};
+	var tmp=[];
+	for(var x=0;x<rtv.dimRanges.length;x++) tmp[x]=rtv.dimRanges[x][1];
+	// [[including,including], ... ]
+	rtv.gcLens=rtv._getGridCoord(rtv,tmp);
+	rtv._getListAt=function(self,coord){
+		if(coord.length!=self.dimRanges.length) throw "lengths dismatch";
+		var gc=self._getGridCoord(self,coord);
+		for(var x=0;x<gcLens.length;x++)
+			if(gc[x]<0 || gc[x]>self.gcLens[x])
+				return null;
+		var rtv=self.arr;
+		for(var x=0;x<coord.length;x++) rtv=rtv[gc[x]];
+		return rtv;
+	}; // list of Objs
+	rtv.getListAt=function(coord){this._getListAt(this,coord);};
+	rtv._objRange2gcRange=function(self,obj){
+		// [[including,including], ... ]
+		var objRangeMin=[],objRangeMax=[];
+		for(var x=0;x<obj.XY.length;x++){
+			var w=obj.WH[x]/2;
+			var c=obj.XY[x];
+			objRangeMin[x]=c-w;
+			objRangeMax[x]=c+w;
+		}
+		// [[including,including], ... ]
+		var gcRange={},gcRangeMin=self._getGridCoord(self,objRangeMin),gcRangeMax=self._getGridCoord(self,objRangeMax);
+		gcRange.length=gcRangeMin.length;
+		for(var x=0;x<gcRangeMin.length;x++)
+			gcRange[x]=[
+				strictInRange(gcRangeMin[x],0,self.gcLens[x]),
+				strictInRange(gcRangeMax[x],0,self.gcLens[x]),
+			];
+		return gcRange;
+	};
+	rtv.objRange2gcRange=function(obj){return this._objRange2gcRange(this,obj);};
+	rtv._remove_recur=function remove_recur(obj,subMap,gcRange){
+		if(gcRange.length==0){
+			for(var x=0;x<subMap.length;x++)
+				if(subMap[x].id==obj.id){
+					if(x+1!=subMap.length) subMap[x]=subMap[subMap.length-1];
+					subMap.pop();
+				}
+			return;
+		}
+		var nextGcRange={};
+		nextGcRange.length=gcRange.length-1;
+		for(var x=1;x<gcRange.length;x++) nextGcRange[x-1]=gcRange[x];
+		for(var x=gcRange[0][0];x<=gcRange[0][1];x++)
+			remove_recur(obj,subMap[x],nextGcRange);
+	};
+	rtv.remove=function(obj){this._remove_recur(obj,this.arr,this._objRange2gcRange(this,obj));};
+	rtv._updateTo_recur_place=function updateTo_recur_place(self,obj,subMap,gcRange){
+		if(gcRange.length==0){
+			subMap.push(obj);
+			return;
+		}
+		var nextGcRange={};
+		nextGcRange.length=gcRange.length-1;
+		for(var x=1;x<gcRange.length;x++) nextGcRange[x-1]=gcRange[x];
+		for(var x=gcRange[0][0];x<=gcRange[0][1];x++)
+			updateTo_recur_place(self,obj,subMap[x],nextGcRange);
+	};
+	rtv._updateTo=function(self,obj,coord){
+		if(coord.length!=self.gcLens.length || obj.XY.length!=coord.length) throw "lengths dismatch";
+		self.remove(obj);
+		for(var x=0;x<obj.XY.length;x++) obj.XY[x]=coord[x];
+		self._updateTo_recur_place(self,obj,self.arr, self._objRange2gcRange(self,obj));
+	};
+	rtv.updateTo=function(obj,coord){this._updateTo(this,obj,coord);};
+	rtv._cleanList_recur=function cleanList_recur(lv,arr){
+		if(lv==0) arr.length=0;
+		else for(var x=0;x<arr.length;x++) cleanList_recur(lv-1,arr[x]); 
+	};
+	rtv.cleanList=function(){this._cleanList_recur(this.gcLens.length,this.arr);};
+	rtv._getNear_recur=function getNear_recur(lv, obj, mapArr, IDPrefix, gcRange, currFoundDict,currFoundArr){
+		var it=gcRange.length-lv;
+		if(lv==0) for(var x=0;x<mapArr.length;x++){
+				//console.log("debug counter");
+				if(mapArr[x].id.slice(0,IDPrefix.length)!=IDPrefix || currFoundDict[mapArr[x].id]) continue;
+				currFoundDict[mapArr[x].id]=1;
+				currFoundArr.push(mapArr[x]);
+			}
+		else for(var x=gcRange[it][0];x<=gcRange[it][1];x++) getNear_recur(lv-1, obj, mapArr[x], IDPrefix, gcRange, currFoundDict,currFoundArr);
+	};
+	rtv._getNear=function(self,obj,IDPrefix){ // obj here means: boss or players or theWindow
+		var dict={},arr=[];
+		self._getNear_recur(self.gcLens.length, obj, self.arr, IDPrefix, self.objRange2gcRange(obj), dict,arr );
+		return arr;
+	};
+	rtv.getNear=function(obj,IDPrefix){return this._getNear(this,obj,IDPrefix);};
+	rtv.arr=newMap_recur(dimRanges,deltas);
+	//rtv.blk=[];
+	return rtv;
+// debug
+// var tttt=newMap([[minX,maxX],[minY,maxY]],[100,100]);tttt.updateTo(game.bullets[0],[0,0]);tttt.arr[0][0];
+// for(var x=0;x<tttt.arr.length;x++)for(var y=0;y<tttt.arr[x].length;y++)if(tttt.arr[x][y].length)console.log(tttt.arr[x][y]);
+//
+}
+// 
+//function animatedList(length){}
+// 
+// obj
+function packObj(objs){
+	var divs={};
+	divs.length=objs.length;
+	for(var x=0;x<objs.length;x++)
+	{
+		divs[x]=sa(ce('div'),'style',"left:"+objs[x].XY[0]+"px;top:"+objs[x].XY[1]+"px;");
+		sa(ac(divs[x],(objs[x].animated)?objs[x].canvas[0]:objs[x].canvas),'id',objs[x].id);
+	}
+	return divs;
+}
+// effects
+function newHitEffectCanvasStr(initSizeW,initSizeH,scaleIncDelta,frameNum,RGBnums,alpha,str){
+	var rtv={};
+	rtv.length=frameNum;
+	for(var x=0;x<frameNum;x++){
+		var coef=1+x*scaleIncDelta;
+		rtv[x]=drawFont(newCanvas(initSizeW*coef,initSizeH*coef),
+			str,initSizeH*coef*1.75+'px',
+			"rgba("+RGBnums[0]+','+RGBnums[1]+','+RGBnums[2]+','+alpha*((frameNum-x)/frameNum)+")");
+	}
+	return rtv;
+}
+// drops
+function newDropCanvasImg(img,scale,type,info){
+	var rtv={};
+	switch(type){
+	case "roll":
+		rtv.length=info.x*info.y/gcd(info.x,info.y);
+		var xc=2*Math.PI/info.x,yc=2*Math.PI/info.y;
+		for(var x=0;x<rtv.length;x++) rtv[x]=drawImg(newCanvas(),img,0,undefObj,undefObj,undefObj,undefObj,scale*Math.cos(x*xc),scale*Math.cos(x*yc));
+		break;
+	default:
+		return drawImg(newCanvas(),img);
+		break;
+	}
+	return rtv;
+}
+
+</script>
 </head>
 <body>
 
@@ -243,8 +1871,788 @@ div.pre{width:0px;height:0px;}
 		</div>
 	</div>
 </div>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-t-game-var.js"></script>
-<script src="https://raw.githubusercontent.com/aaaaagold/shooting-bullet-rain/master/js/_script-t.js"></script>
+<script>
+"use strict";
+// js/_script-t-game-var.js
+// constants
+//   html ele
+var htmlEle={};
+htmlEle.playView=new htmlGamePlayView(consts.playViewInner,consts.playViewOuter);
+htmlEle.playViewBg=new htmlGamePlayView(consts.playViewBgInner);
+htmlEle.blk=new htmlGamePlayBlk(
+	consts.playerID,
+	consts.bossID,
+	consts.bulletPlayerID,
+	consts.bulletBossID,
+	consts.hitEffectID,
+	consts.dropID
+);
+htmlEle.msg={};
+	htmlEle.msg.pause=ge(consts.playMsgPause);
+	htmlEle.msg.start=ge(consts.playMsgStart);
+	htmlEle.msg.boss=ge(consts.msgBossID);
+	htmlEle.msg.skill=ge(consts.msgSkID);
+	htmlEle.msg.oth=ge(consts.msgOthID);
+	htmlEle.msg.sys=ge(consts.msgSysID);
+	//   msg2player
+	htmlEle.msg.helpString="move by W,A,S,D\nP for pause or not\nH for this page\nR for restart page\nO for fire bullet(s)\nM for muted or not\n\nIf you use touchpad, touch on \"Touch mode\" on the right\n\nThe green dot is a hint where the boss is";
+htmlEle.ende={
+	"parent":ge(consts.endblk),
+	"lose":ge(consts.endLose),
+	"win":ge(consts.endWin)
+};
+htmlEle.menu={
+	"readme":ge(consts.menuReadme),
+	"rankView":ge(consts.menuRankView),
+	"rankSubmit":ge(consts.menuRankSubmit),
+	"restart":ge(consts.btnRestart)
+};
+htmlEle.menuFunction={
+	"pause":ge(consts.menuPause),
+	"auto":{
+		"move":ge(consts.menuAutoMove),
+		"shot":ge(consts.menuAutoShot)
+	},
+	"mute":ge(consts.menuMute)
+};
+htmlEle.status={};
+	htmlEle.status.boss={
+		"parent":ge(consts.bossStatID),
+		"hp":ge(consts.bossStatID+'-hp'),
+		"mp":ge(consts.bossStatID+'-mp')
+	};
+	htmlEle.status.player={
+		"parent":ge(consts.playerStatID),
+		"hp":ge(consts.playerStatID+'-hp'),
+		"mp":ge(consts.playerStatID+'-mp')
+	};
+	htmlEle.status.time={
+		"parent":ge(consts.timeStatID),
+		"data":ge(consts.timeStatID+'-data')
+	};
+htmlEle.ptr={};
+	htmlEle.ptr.boss=ge(consts.bossPtrID);
+htmlEle.sound={};
+	htmlEle.sound.global={
+		"shot":new htmlSound(consts.soundShotID),
+		"hit":new htmlSound(consts.soundHitID),
+		"buffed":new htmlSound(consts.soundBuffedID)
+	};
+	htmlEle.sound.bossAtk={};
+		for(var x=0;x<7;x++) htmlEle.sound.bossAtk[x]=new htmlSound(consts.soundBossAtkID+x);
+		htmlEle.sound.bossAtk['T']=new htmlSound(consts.soundBossAtkID+'T');
+	htmlEle.sound.ende={
+		"win":new htmlSound(consts.soundEndID+"-win"),
+		"lose":new htmlSound(consts.soundEndID+"-lose")
+	};
+htmlEle.fullScreenMsg={};
+htmlEle.fullScreenMsg.rankView=ge(consts.rankView);
+htmlEle.fullScreenMsg.rankSubmit=ge(consts.rankSubmit);
+htmlEle.fullScreenMsg.help=ge(consts.msgPregame);
+htmlEle.fullScreenMsg.restart=ge(consts.restartConfirmPage);
+htmlEle.rankSubmit={};
+	htmlEle.rankSubmit.parent=ge(consts.rankSubmit);
+	htmlEle.rankSubmit.input_id=ge(consts.rankSubmit+'-id');
+	htmlEle.rankSubmit.input_time=ge(consts.rankSubmit+'-time');
+	htmlEle.rankSubmit.input_php=ge(consts.rankSubmit+'-php');
+	htmlEle.rankSubmit.input_bhp=ge(consts.rankSubmit+'-bhp');
+	htmlEle.rankSubmit.confirm=ge(consts.rankSubmitConfirm);
+htmlEle.rankView={};
+	htmlEle.rankView.refreshAll=ge(consts.rankView_refreshAll);
+	htmlEle.rankView.content=ge(consts.rankView_content);
+	htmlEle.rankView.dataHp=ge(consts.rankView_data_hp);
+	htmlEle.rankView.dataTime=ge(consts.rankView_data_time);
+//   game consts
+{
+	// set bg range
+	htmlEle.playViewBg.in.style.left=(consts.minX)+"px";
+	htmlEle.playViewBg.in.style.width=(consts.maxX-consts.minX)+"px";
+	htmlEle.playViewBg.in.style.top=(consts.minY)+"px";
+	htmlEle.playViewBg.in.style.height=(consts.maxY-consts.minY)+"px";
+}
+var imgSet=[
+newIP(consts.player0imgID,'test-yous-eng.png'),
+newIP(consts.bossImgID,'test-bosses.png'),
+newIP('img-bullet','test-arrow.png'),
+newIP('img-arrow-up','arrow-up_b.png'),
+newIP('img-atk','atk.png'),
+newIP('img-timer','timer.png'),
+newIP('img-end-win','end-won.png'),
+newIP('img-end-lose','end-died.png'),
+newIP('img-mute','mute.png'),
+newIP('img-trace','trace.png'),
+];for(var x=0;x<imgSet.length;x++) imgSet[x].path=consts.imgDir+imgSet[x].path;
+var imgID2It=[]; for(var x=0;x<imgSet.length;x++) imgID2It[imgSet[x].id]=x;
+function imgload(){imgloaded[imgID2It[this.id]]=1;}
+//  control
+var kbdef=new kbObj();
+var touchBtns=[
+newTB('touch-ctl-left','img-arrow-up',-90,kbdef.left),
+newTB('touch-ctl-down','img-arrow-up',180,kbdef.down),
+newTB('touch-ctl-up','img-arrow-up',0,kbdef.up),
+newTB('touch-ctl-right','img-arrow-up',90,kbdef.right),
+newTB('touch-ctl-atk','img-atk',0,kbdef.atk),
+newTB(consts.touchPauseID,'img-timer',0,kbdef.pause),
+newTB(consts.touchMuteID,'img-mute',0,kbdef.mute),
+];
+var touchBtnID2kb=[]; for(var x=0;x<touchBtns.length;x++) touchBtnID2kb[touchBtns[x].id]=touchBtns[x].kb;
+function touchStrt(){keystat[touchBtnID2kb[this.id]]=1;this.style.opacity="0.75";}
+function touchEnd(){keystat[touchBtnID2kb[this.id]]=0;this.style.opacity="0.25";}
+
+// variables
+
+var nomsg=0;
+var loadingClk=0;
+var clk=0;
+var pause=1;
+var muted=1;
+var nextFrame=0;
+
+var keystat_pre={length:512}; for(var x=0;x<512;x++) keystat_pre[x]=0;
+var keystat={length:512}; for(var x=0;x<512;x++) keystat[x]=0;
+var imgloaded=[]; for(var x=0;x<imgSet.length;x++) imgloaded[x]=0;
+
+var view_ldur={};
+view_ldur.objDispWd={};
+view_ldur.objDispWd.XY={}; view_ldur.objDispWd.XY.length=2;
+view_ldur.objDispWd.WH={}; view_ldur.objDispWd.WH.length=2;
+view_ldur.htmlView=htmlEle.playView;
+view_ldur.move=function(){
+	this.innerDxy={};
+		this.innerDxy[0]=Number(this.htmlView.in.style.left.slice(0,-2));
+		this.innerDxy[1]=Number(this.htmlView.in.style.top.slice(0,-2));
+		//this.innerDxy.length=2;
+	this.l=-this.cw_half-this.innerDxy[0];
+	this.r= this.cw_half-this.innerDxy[0];
+	this.u=this.ch-this.innerDxy[1];
+	this.d=0-this.innerDxy[1];
+	//this.objDispWd.XY=[-this.innerDxy[0], -this.innerDxy[1]];
+	this.objDispWd.XY[0]=-this.innerDxy[0];
+	this.objDispWd.XY[1]=-this.innerDxy[1]+this.ch/2;
+};
+view_ldur.resize_partial=function(){
+	this.cw=this.htmlView.out.clientWidth;
+	this.ch=this.htmlView.out.clientHeight;
+	this.cw_half=this.cw/2;
+	//this.objDispWd.WH=[ this.cw*1.25+256,  this.ch*1.25+256];
+	this.objDispWd.WH[0]=this.cw+1024;
+	this.objDispWd.WH[1]=this.ch+1024;
+};
+view_ldur.update=function(resized){
+	if(resized) this.resize_partial();
+	this.move();
+};view_ldur.update(1);
+view_ldur.isOutOfRange=function(XY){return outOfRange(XY,minArr.new(this.l,this.d),minArr.new(this.r,this.u));};
+view_ldur.inRangeMove=function(obj,dXY){obj.moveObj(dXY,minArr.new(this.l,this.d),minArr.new(this.r,this.u));};
+
+//var refreshQ=[];
+var msgQ={};
+msgQ.boss=new classMsgQ('boss',5,99,htmlEle.msg.boss);
+msgQ.sk=new classMsgQ('sk',5,99,htmlEle.msg.skill);
+msgQ.oth=new classMsgQ('oth',5,99,htmlEle.msg.oth);
+msgQ.sys=new classMsgQ('sys',5,99,htmlEle.msg.sys);
+
+</script>
+<script>
+"use strict";
+// js/_script-t.js
+//var debugFlag=0;
+function switchAutoShot(){msgQ.sys.newMsg((keystat[kbdef.atk]=!keystat[kbdef.atk])?"auto shot enabled":"auto shot disabled");}
+function switchMute(){
+	muted=!muted;
+	for(var j in htmlEle.sound) for(var i in htmlEle.sound[j]){
+		htmlEle.sound[j][i].mute(muted);
+	}
+	msgQ.sys.newMsg(muted?"muted":"not muted");
+}
+function pressStart(){
+	htmlEle.msg.start.style.display="none";
+	pause=0;
+}
+function pressStart_mouse(){
+	pressStart();
+}
+function pressStart_touch(){
+	htmlEle.msg.start.removeEventListener('mousedown',pressStart);
+	pressStart();
+}
+function initStart(){
+	pause=1;
+	sa(htmlEle.msg.start,'class','btn');
+	htmlEle.msg.start.innerHTML="start";
+	htmlEle.msg.start.style.display="block";
+}
+function pauseSwitch(){
+	var htmlMsg=htmlEle.msg;
+	if(pause){
+		htmlMsg.pause.style.display="none";
+	}else{
+		htmlMsg.pause.style.display="block";
+	}
+	pause=!pause;
+}
+function pauseSwitch_mouse(){
+	if(htmlEle.msg.start.style.display=="block"){pressStart_mouse();return;}
+	pauseSwitch();
+}
+function pauseSwitch_touch(){
+	if(htmlEle.msg.start.style.display=="block"){pressStart_touch();return;}
+	pauseSwitch();
+}
+
+// class/foos
+function initBoss(id,canvas,XY,WH,inertia,speed,maps,mapName,HP,MP){
+	var rtv=new initObj("boss",id,canvas,XY,WH,inertia,speed,maps,mapName,HP,MP);
+	rtv.ptr=new initObj("ptr","ptr-"+id,
+		drawArc(newCanvas(40,40),[20,20],15,[0,2*Math.PI],'rgba(0,233,0,0.75)','0px','rgba(0,233,0,0.75)'),
+		[0,consts.hideY],[0,0]
+	);
+	ac(htmlEle.ptr.boss,packObj([rtv.ptr])[0]);
+	return rtv;
+}
+function refreshView(maps,view){
+	let tmp;
+	// physics
+	tmp=maps.mapPhy.getNear(view.objDispWd,'');
+	for(let x=0;x<tmp.length;x++) tmp[x].refresh();
+	// effects
+	tmp=maps.mapEff.getNear(view.objDispWd,'');
+	for(let x=0;x<tmp.length;x++) tmp[x].refresh();
+}
+function updateBossStat(game,status,bossHitIt){
+	if(bossHitIt==undefObj) bossHitIt=0;
+	if(bossHitIt==-1) return;
+	let b=game.boss[bossHitIt];
+	if(b.cHP==0) game.ende=1;
+	if(b.cHP<0) b.cHP=0;
+	status.hp.innerHTML="HP: "+b.cHP;
+	if(b.cMP<0) b.cMP=0;
+	status.mp.innerHTML="MP: "+b.cMP;
+}
+function updatePlayerStat(game,status){
+	var p=game.players[0];
+	if(p.cHP==0) game.ende=-1;
+	if(p.cHP<0) p.cHP=0;
+	status.hp.innerHTML="HP: "+p.cHP;
+	if(p.cMP<0) p.cMP=0;
+	status.mp.innerHTML="MP: "+p.cMP;
+}
+function updatePannel(game,status){
+	updateBossStat(game,status.boss);
+	updatePlayerStat(game,status.player);
+}
+function _createHitEffect(map,effectList,XY,dXY){
+	let hes=effectList;
+	let it=hes.iter; hes.iter=(hes.iter+1)%hes.length;
+	let he=effectList[it];
+	if(he.html==undefObj) he.html=ge(he.id);
+	if(he.html==null) return;
+	he.mapUpdateTo(XY);
+	//for(var x=0;x<XY.length;x++) he.XY[x]=XY[x];
+	for(let x=0;x<XY.length;x++) he.inertia[x]=dXY[x]/4;
+	while(he.html.childNodes.length) he.html.removeChild(he.html.childNodes[0]);
+	ac(he.html,he.canvas[0]);
+	he.animatedIt=1%he.canvas.length;
+	he.disappear=0;
+}
+//function createHitEffectPlayer(game,XY,dXY){_createHitEffect(game.mapEffect,game.hitEffectsPlayer,XY,dXY);}
+//function createHitEffectBoss(game,XY,dXY){_createHitEffect(game.mapEffect,game.hitEffectsBoss,XY,dXY);}
+function moveHitEffects(game){
+	let he=game.hitEffectsPlayer;
+	let bhe=game.hitEffectsBoss;
+	for(let x=0;x<he.length;x++){
+		//var h=he[x];
+		//moveObj(h,h.inertia);
+		h.moveObj(h.inertia);
+		//for(var z=0;z<h.inertia.length;z++) h.inertia[z]*=7/8;
+	}
+	for(let x=0;x<bhe.length;x++){
+		//var h=bhe[x];
+		//moveObj(h,h.inertia);
+		h.moveObj(h.inertia);
+		//for(var z=0;z<h.inertia.length;z++) h.inertia[z]*=7/8;
+	}
+}
+function moveBullets(game){
+	let setq;
+	// players' bullets
+	setq=game.bullets.q;
+	while(setq.buff.length!=0 && game.bullets[setq.buff[0]].disappear==1) setq.pop();
+	for(let x=0;x<setq.buff.length;x++){
+		let i=setq.buff[x];
+		if(game.bullets[i].move==undefObj) continue;
+		game.bullets[i].move(game.boss[game.getNearestBossIt(game.bullets[i].XY)].XY);
+	}
+	// boss' bullets
+	setq=game.bossBullets.q;
+	while(setq.buff.length!=0 && game.bossBullets[setq.buff[0]].disappear==1) setq.pop();
+	for(let x=0;x<setq.buff.length;x++){
+		let i=setq.buff[x];
+		if(game.bossBullets[i].move==undefObj) continue;
+		game.bossBullets[i].move(game.players[0].XY);
+	}
+}
+function createBosses(game,bossblkid,id){
+}
+function moveBoss(game){
+	let bs=game.boss;
+	let spd=consts.initMoveSpeed/2; // 2.3
+	let ss=spd*spd;
+	for(let x=0;x<bs.length;x++)
+	{
+		let oriMP=bs[x].cMP;
+		game.moveBossAtk(x,htmlEle.sound);
+		
+		// boss moving
+		
+		let dx=game.players[0].XY[0]-bs[x].XY[0];
+		if(ss<dx*dx) dx=dx<0?-spd:spd;
+		bs[x].moveObj(minArr.new(dx,0),minArr.new(consts.minX,consts.minY),minArr.new(consts.maxX,consts.maxY));
+		
+		// update status
+		if(bs[x].cMP<bs[x].mMP) bs[x].cMP+=1;
+		if(bs[x].cMP!=oriMP) updateBossStat(game,htmlEle.status.boss,x);
+	}
+}
+function collide(game,htmlStatus,htmlSound){
+	let hit_playSound=0;
+	// bullet X boss
+	//var bu=game.bullets;
+	let bo=game.boss;
+	let bossHitIt=-1;
+	for(let o=0;o<bo.length;o++)
+	{
+		if(bo[o].disappear) continue;
+		let bu=game.map.getNear(bo[o],'bullet-player-');
+		for(let u=0;u<bu.length;u++)
+		{
+			if(bu[u].disappear) continue;
+			let dXY=minArr.minus(bo[o].XY,bu[u].XY);
+				//dXY.length=Math.min(bo[o].XY.length, bu[u].XY.length);
+				//for(var x=0;x<dXY.length;x++) dXY[x]=bo[o].XY[x]-bu[u].XY[x];
+			let sWH=minArr.add(bo[o].WH,bu[u].WH);
+				//sWH.length=Math.min(bo[o].WH.length, bu[u].WH.length);
+				//for(var x=0;x<sWH.length;x++) sWH[x]=bo[o].WH[x]+bu[u].WH[x];
+			let hit=1;
+			for(let x=0;x<dXY.length && x<sWH.length;x++)
+				if(4*dXY[x]*dXY[x] > sWH[x]*sWH[x])
+					hit=0;
+			if(hit){
+				hit_playSound=1;
+				bu[u].disappear=1;
+				bo[o].cHP-=(bo[o].cHP<bu[u].cHP)?bo[o].cHP:bu[u].cHP;
+				bossHitIt=o;
+				//createHitEffectPlayer(game,bu[u].XY,bu[u].inertia);
+				game.createHitEffectPlayer(bu[u].XY,bu[u].inertia);
+				//msgQ.boss.newMsg('HP-'+bu[u].cHP);
+			}
+		}
+	}
+	if(bossHitIt!=-1) updateBossStat(game,htmlStatus.boss,bossHitIt);
+
+	// bossbulles X player
+	let p=game.players[0];
+	let bbu=game.map.getNear(p,'bullet-boss-');
+	//var bbu=game.bossBullets;
+	let playerHit=0;
+	for(let u=0;u<bbu.length;u++)
+	{
+		if(bbu[u].disappear) continue;
+		let dXY=minArr.minus(p.XY,bbu[u].XY);
+			//dXY.length=Math.min(p.XY.length, bbu[u].XY.length);
+			//for(var x=0;x<dXY.length;x++) dXY[x]=p.XY[x]-bbu[u].XY[x];
+		let sWH=minArr.add(p.WH,bbu[u].WH);
+			//sWH.length=Math.min(p.WH.length, bbu[u].WH.length);
+			//for(var x=0;x<sWH.length;x++) sWH[x]=p.WH[x]+bbu[u].WH[x];
+		let hit=1;
+		for(let x=0;x<dXY.length && x<sWH.length;x++)
+			if(4*dXY[x]*dXY[x] > sWH[x]*sWH[x])
+				hit=0;
+		if(hit){
+			hit_playSound=1;
+			bbu[u].disappear=1;
+			p.cHP-=(p.cHP<bbu[u].cHP)?p.cHP:bbu[u].cHP;
+			//createHitEffectBoss(game,bbu[u].XY,bbu[u].inertia);
+			game.createHitEffectBoss(bbu[u].XY,bbu[u].inertia);
+			//msgQ.oth.newMsg('HP-'+bbu[u].cHP);
+			playerHit=1;
+		}
+	}
+	if(playerHit) updatePlayerStat(game,htmlStatus.player);
+	if(hit_playSound) htmlSound.global.hit.play();
+}
+function eatDrop(game,htmlStatus,htmlSound){
+	let parr=game.players;
+	let darr=game.drops;
+	let eat_playSound=0;
+	for(let i=0;i<darr.length;i++){
+		if(darr[i].disappear) continue;
+		let dXY=minArr.minus(parr[0].XY,darr[i].XY);
+		let sWH=minArr.add  (parr[0].WH,darr[i].WH);
+		let eat=1;
+		for(let x=0;x<dXY.length && x<sWH.length;x++)
+			if(4*dXY[x]*dXY[x] > sWH[x]*sWH[x])
+				eat=0;
+		if(eat){
+			eat_playSound=1;
+			darr[i].disappear=1;
+			for(let x in darr[i].enhance){
+				if(parr[0].stat[x]==undefObj) parr[0].stat[x]=darr[i].enhance[x];
+				else parr[0].stat[x]+=darr[i].enhance[x];
+				//if(x=='batk') ge('dynamicstyle').innerHTML="#bullet-player>div>canvas{transform:scale("+(1+parr[0].stat[x]/10)+","+(1+parr[0].stat[x]/10)+") rotateX(180deg);}";
+			}
+			game.createHitEffectEnhance(darr[i].XY,darr[i].inertia);
+			msgQ.oth.newMsg(darr[i].msg);
+		}
+	}
+	if(eat_playSound) htmlSound.global.buffed.play();
+}
+
+function updatePtrs(game){
+	let b=game.boss;
+	//if(b==undefObj) return;
+	for(let x=0;x<b.length;x++){
+		let ptr=b[x].ptr;
+		if(ptr.html==undefObj) ptr.html=ge(ptr.id);
+		if(view_ldur.isOutOfRange(b[x].XY)){
+			view_ldur.inRangeMove(ptr, minArr.minus(b[x].XY,ptr.XY));
+			ptr.refresh();
+			ptr.html.style.opacity="1";
+		}else{
+			ptr.html.style.opacity="0";
+		}
+	}
+}
+function moveCamera(currentPos,htmlView,resized){
+	let updateFlag=resized?1:0;
+	// 2.3
+	let XY=minArr.copy(currentPos);
+	let stl=htmlView.in.style;
+	let stlxy={};
+		stlxy[0]=Number(htmlView.in.style.left.slice(0,-2));
+		stlxy[1]=Number(htmlView.in.style.top.slice(0,-2));
+	let cwh={};
+		cwh[0]=htmlView.out.clientWidth;
+		cwh[1]=htmlView.out.clientHeight;
+	let cwh4={};
+		cwh4[0]=cwh[0]/4;
+		cwh4[1]=cwh[1]/4;
+	let dxy={};
+		dxy[0]=XY[0]+stlxy[0];
+		dxy[1]=XY[1]+stlxy[1];
+	let cy=(cwh[1]-(consts.maxY-consts.minY))/2+"px";
+	if((consts.maxX-consts.minX)<cwh[0]){
+		if(htmlView.in.style.left!="0px"){
+			updateFlag=1;
+			htmlView.in.style.left="0px";
+		}
+	}else{
+		let distx=0,M=-consts.minX-cwh4[0]*2,m=-consts.maxX+cwh4[0]*2;
+		if(outOfRange(stlxy[0],m,M) || outOfRange(dxy[0],-cwh4[0],cwh4[0])){
+			updateFlag=1;
+			if(dxy[0]<0){
+				distx=stlxy[0]-dxy[0]-cwh4[0];
+			}else{
+				distx=stlxy[0]-dxy[0]+cwh4[0];
+			}
+			htmlView.in.style.left=strictInRange(distx,m,M)+"px";
+		}
+	}
+	if(consts.maxY-consts.minY<cwh[1]){
+		if(htmlView.in.style.top!=cy){
+			updateFlag=1;
+			htmlView.in.style.top=cy;
+		}
+	}else{
+		let disty=0,M=-consts.minY,m=-consts.maxY+cwh[1];
+		if(outOfRange(stlxy[1],m,M) || outOfRange(dxy[1],cwh4[1],cwh4[1]*2)){
+			updateFlag=1;
+			if(dxy[1]<cwh4[1]){
+				disty=stlxy[1]-dxy[1]+cwh4[1];
+			}else{
+				disty=stlxy[1]-dxy[1]+cwh4[1]*2;
+			}
+			htmlView.in.style.top=strictInRange(disty,m,M)+"px";
+		}
+	}
+	// update boundary
+	if(updateFlag){
+		view_ldur.update(resized);
+	}
+}
+function resetView(game,playView,view_ldur){
+	moveCamera(game.players[0].XY,playView,1);
+	updatePtrs(game);
+	refreshView(game.maps,view_ldur);
+}
+function moveBgPos(playViewBg,dx,dy){
+	let bgs=playViewBg.in.style,tmp=bgs.backgroundPosition.match(/(-?[0-9]*)px[ ]*(-?[0-9]*)px/);
+	let basex=(tmp==null||tmp[1]=="")?0:Number(tmp[1]);
+	let basey=(tmp==null||tmp[2]=="")?0:Number(tmp[2]);
+	bgs.backgroundPosition=(basex+dx)+"px "+(basey+dy)+"px";
+}
+function updateTime(game,htmlTime){
+	let sec_=game.frameTime*consts.updatePeriod;
+	let sec=parseInt(sec_/1000);
+	let min=parseInt(sec/60);
+	let hr=parseInt(min/60);
+	sec_%=1000;
+	sec%=60;
+	min%=60;
+	if(hr<10) hr="0"+hr;
+	if(min<10) min="0"+min;
+	if(sec<10) sec="0"+sec;
+	for(let x=0,s=3-sec_.toString().length;x<s;x++) sec_="0"+sec_;
+	htmlTime.data.innerHTML=hr+":"+min+":"+sec+"."+sec_;
+}
+function mainloop1(game,htmlEle){
+	if(pause && !nextFrame){
+		updatePtrs(game);
+		msgQ.sys.update();
+		return;
+	}
+	nextFrame=0;
+	if(game.ende!=0 && game.endless==0){
+		let htmlEnd=htmlEle.ende;
+		let type=(game.ende<0)?"lose":"win";
+		let disp=htmlEnd[type].style.display;
+		htmlEnd[type].style.display="block";
+		sa(htmlEle.menu.rankSubmit,'class','btn');
+		htmlEnd.parent.style.top=(htmlEnd.parent.parentNode.clientHeight-htmlEnd.parent.clientHeight)/2+"px";
+		msgQ.sys.update();
+		if(disp!="block" && game.ende>0){
+			let ranksubmit=htmlEle.rankSubmit;
+			htmlEle.sound.ende[type].play();
+			game.updateResult();
+			msgQ.sys.newMsg("your last result is prepared",99);
+		}
+		return;
+	}
+	//usrkb(game); // <- movePlayer(game);
+	game.movePlayer0(keystat,htmlEle.sound);
+	moveBoss(game);
+	if(game.frameTime!=0 && parseInt(game.frameTime/32)==game.frameTime/32)
+		game.createDrop(game.boss[0].XY,[0,-15]);
+	moveCamera(game.players[0].XY,htmlEle.playView);
+	moveBullets(game);
+	game.moveDrop();
+	//moveHitEffects(game); // extra movement
+	refreshView(game.maps,view_ldur);
+	collide(game,htmlEle.status,htmlEle.sound);
+	eatDrop(game,htmlEle.status,htmlEle.sound);
+	updatePtrs(game);
+	moveBgPos(htmlEle.playViewBg,0,8);
+	for(let x in msgQ) msgQ[x].update();
+	updateTime(game,htmlEle.status.time);
+	game.frameTime+=1;
+}
+function mainloop(game){
+	setTimeout(function(){
+		mainloop(game);
+		mainloop1(game,htmlEle);
+	},consts.updatePeriod);
+}
+function reduce_plus(pre,ths){return pre+ths;}
+var varified=0,varifiedDoDone=0;
+function varify(){return imgloaded.reduce(reduce_plus)==imgloaded.length;}
+function varifiedDo(){
+	// game
+	game=new initGame(htmlEle.blk);
+	// evts
+	//   start banner
+	//htmlEle.msg.start.innerHTML="loading...";
+	ae(htmlEle.msg.start,'touchstart',pressStart_touch);
+	ae(htmlEle.msg.start,'mousedown',pressStart_mouse);
+	//   restart
+	//ae(ge('menu-restart'),'mousedown',function(){ if(confirm('restart?')) game.reset(); });
+	ae(ge(consts.restartConfirm),'mousedown',function(){ game.reset(); this.parentNode.parentNode.style.display="none"; msgQ.sys.newMsg("game reset",23); });
+	//   reset camera
+	//ae(ge('menu-resetView'),'mousedown',function(){ resetView(game,htmlEle.playView,view_ldur); });
+	//   pause
+	ae(htmlEle.menuFunction.pause,'click',pauseSwitch_mouse);
+	//   touch-pannel
+	for(let x=0;x<touchBtns.length;x++) {
+		let div=ac(ge(touchBtns[x].id),drawImg(ce('canvas'),ge(touchBtns[x].imgid),touchBtns[x].deg));
+		ae(div,'touchstart',touchStrt);
+		ae(div,'touchend',touchEnd);
+	}
+	ae(ge(consts.touchPauseID),'touchstart',pauseSwitch_touch);
+	ae(ge(consts.touchMuteID),'touchstart',switchMute);
+	// pannel
+	updatePannel(game,htmlEle.status);
+	// mainloop
+	moveCamera(game.players[0].XY,htmlEle.playView,1);
+	updatePtrs(game);
+	moveBgPos(htmlEle.playViewBg,0,0);
+	mainloop(game);
+	window.onresize=function(){
+		resetView(game,htmlEle.playView,view_ldur);
+	};
+	initStart();
+	varifiedDoDone=1;
+}
+function varifyLoop(){
+	setTimeout(function(){
+		let lp=16;
+		htmlEle.msg.start.style.opacity=0.5+Math.abs(loadingClk%lp-lp/2)/lp+"";
+		loadingClk=(loadingClk+1)%lp;
+		if(varifiedDoDone==0) varifyLoop();
+		if(varified==0 && varify()){
+			varified=1;
+			varifiedDo();
+			//alert(htmlEle.msg.helpString);
+		}
+	},66);
+}
+
+// main
+d.onselectstart=function(){return false}
+// main-game
+var game;
+ae(d,'keydown',function(e){
+	let evt=e||event;
+	let k=evt.keyCode?evt.keyCode:evt.which;
+	keystat_pre[k]=keystat[k];
+	keystat[k]=1;
+	switch(k){
+	case kbdef.ultra:
+		break;
+	case kbdef.pause:
+		pauseSwitch_mouse();
+		break;
+	case kbdef.mute:
+		switchMute();
+		break;
+	case kbdef.restart:
+		fullScreenMsgShow(htmlEle.fullScreenMsg.restart);
+		break;
+	case kbdef.help:
+		fullScreenMsgShow(htmlEle.fullScreenMsg.help);
+		break;
+	case kbdef.close:
+		fullScreenMsgHideAll();
+		break;
+	//case kbdef.msg:
+	//	nomsg=!nomsg;
+	//	break;
+	default:
+		break;
+	}
+	if(keystat[16])/* shift */{
+		if(k==kbdef.restart) game.reset();
+		if(k==73) /* I */ switchAutoShot();
+	}
+});
+ae(d,'keyup',function(event){
+	let k=event.keyCode?event.keyCode:event.which;
+	keystat_pre[k]=keystat[k];
+	keystat[k]=0;
+});
+for(let x=0;x<imgSet.length;x++){
+	ge(imgSet[x].id).onload=imgload;
+}
+for(let x=0;x<imgSet.length;x++) setImg(imgSet[x].id,imgSet[x].path);
+varifyLoop();
+// evts
+function fullScreenMsgHideAll(){ for(let x in htmlEle.fullScreenMsg) htmlEle.fullScreenMsg[x].style.display="none"; }
+function fullScreenMsgBtn(me){
+	if(me.style.display=="block") me.style.display="none";
+	else{
+		fullScreenMsgHideAll();
+		me.style.display="block";
+		if(!pause && game.ende==0) pauseSwitch();
+	}
+}
+function fullScreenMsgShow(me){ if(me.style.display!="block") fullScreenMsgBtn(me); }
+//   restartConfirm
+ae(htmlEle.menu.restart,'mousedown',function(){ fullScreenMsgBtn(htmlEle.fullScreenMsg.restart); });
+//   readme
+//   readme-put_msg
+ge(consts.msgPregame).childNodes[1].childNodes[0].innerHTML=("How to play?\n\n"+htmlEle.msg.helpString).replace(/\n/g,"<br>");
+htmlEle.fullScreenMsg.help.style.display="block";
+//   readme-evt
+ae(htmlEle.menu.readme,'mousedown',function(){ fullScreenMsgBtn(htmlEle.fullScreenMsg.help); });
+//ae(ge(consts.msgPregameClose),'mousedown',function(){this.parentNode.style.display="none";})
+//   rank
+//     rank-view
+ae(htmlEle.menu.rankView,'mousedown',function(){ fullScreenMsgBtn(htmlEle.fullScreenMsg.rankView); });
+function rankDataClear(htmlTarget){
+	rmca(htmlTarget.childNodes[1]);
+	rmca(htmlTarget.childNodes[0]);
+}
+function rankDataPut(htmlTarget,data){
+	let names=htmlTarget.childNodes[0];
+	let values=htmlTarget.childNodes[1];
+	for(let x=0;x<data.length;x++){
+		let divn=ce('div');
+		divn.innerHTML=data[x].name;
+		ac(names,divn);
+		let divv=ce('div');
+		divv.innerHTML=data[x].value;
+		ac(values,divv);
+	}
+}
+function rankRefreshAllQuery(){
+	if (this.readyState==4 && this.status.toString().slice(0,1)=='2'){
+		let res=JSON.parse(this.responseText);
+		rankDataClear(htmlEle.rankView.dataTime);
+		rankDataPut(htmlEle.rankView.dataTime,res['time']);
+		rankDataClear(htmlEle.rankView.dataHp);
+		rankDataPut(htmlEle.rankView.dataHp,res['php']);
+	}
+}
+function rankRefreshAll(){
+	const host=consts.rankServer;
+	const query='getAll';
+	var xx=new XMLHttpRequest();
+	xx.onreadystatechange=rankRefreshAllQuery;
+	xx.open('GET',"http://"+host+'?'+query, true);
+	xx.send(null);
+	console.log('send query');
+}
+ae(htmlEle.rankView.refreshAll,'mousedown',rankRefreshAll);
+//     rank-submit
+ae(htmlEle.menu.rankSubmit,'mousedown',function(){
+	htmlEle.rankSubmit.confirm.innerHTML="confirm";
+	fullScreenMsgBtn(htmlEle.fullScreenMsg.rankSubmit);
+});
+//     rank-submit-confirm
+function rankSubmit(){
+}
+ae(htmlEle.rankSubmit.confirm,'mousedown',function(){
+	if(game.isNoRankDataToSubmit()){
+		this.innerHTML="no data to submit yet";
+		return;
+	}
+	if(htmlEle.rankSubmit.input_id.value==""){
+		this.innerHTML="please set your nickname, or the system will decide it for you.";
+		return;
+	}
+	game.lastResult.id=htmlEle.rankSubmit.input_id.value;
+	var rtv=confirm("your nick name: "+htmlEle.rankSubmit.input_id.value+"\nis that correct?\nWARNING: you CANNOT re-submit this result after submitting.");
+	if(rtv) game.submitResult();
+});
+ae(htmlEle.rankSubmit.input_id,'focus',function(){ if(!game.isNoRankDataToSubmit()) htmlEle.rankSubmit.confirm.innerHTML="confirm"; });
+//  fullScreenMsgClose
+function fullScreenMsgClose(){this.parentNode.style.display="none";}
+for(var x in htmlEle.fullScreenMsg) ae(htmlEle.fullScreenMsg[x].childNodes[0],'mousedown',fullScreenMsgClose);
+//   touch-enabling
+ae(ge('menu-touch'),'touchstart',function(){
+	var ctls=ge('touch-ctl').style;
+	if(this.touch){
+		ctls.display="none";
+		this.touch=0;
+	}else{
+		ctls.display="inline";
+		this.touch=1;
+	}
+});
+//  mute
+ae(htmlEle.menuFunction.mute,'click',switchMute);
+//  auto-shot
+ae(htmlEle.menuFunction.auto.shot,'click',switchAutoShot);
+
+</script>
 </body>
 </html>
 
