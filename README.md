@@ -16,7 +16,8 @@ If you have a powerful computer, you can reduce the value of "consts.updatePerio
 
 ## how to play
 
-Drag "index.html" to your browser
+Go to https://aaaaagold.github.io/shooting-bullet-rain/index.html for non-download play, but the javascript is written in .html
+Or download this repository and open "index-download.html". The javascript is written in different files in folder: "js"
 
 ## server.js? score record server?
 
@@ -27,3 +28,9 @@ You can conncect to server locally by default, but you can also alter
  - "const host" and "const port" in "server/server.js" at line 8 and 9 respectively
 
 to make them can be access by remote
+
+## soundtracks
+
+Soundtracks are not done by me. All soundtracks are gathered from some old games. This is just for demo, for handing in homework, and for a work record.
+
+As source code is here, you can replace anything as you like.
